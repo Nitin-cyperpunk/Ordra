@@ -1,0 +1,16 @@
+{
+  "name": "@ordra/config",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared configuration for Ordra (ESLint, TypeScript, Prettier).",
+  "exports": {
+    "./typescript/base.json": "./typescript/base.json",
+    "./typescript/nextjs.json": "./typescript/nextjs.json",
+    "./prettier/index.mjs": "./prettier/index.mjs"
+  },
+  "files": [
+    "eslint",
+    "typescript",
+    "prettier"
+  ]
+}

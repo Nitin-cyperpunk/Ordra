@@ -1,0 +1,22 @@
+{
+  "name": "@ordra/validation",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared Zod schemas and validation helpers for Ordra.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "echo \"No ESLint config for @ordra/validation yet\"",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,20 @@
+# Preview deployments (Vercel) — enable when Vercel project is connected.
+# This workflow is a placeholder and does not deploy yet.
+
+name: Preview
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  preview:
+    name: Preview placeholder
+    runs-on: ubuntu-latest
+    if: false # Disabled until Vercel deployment is configured
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Placeholder
+        run: echo "Configure Vercel preview deployments before enabling this workflow."

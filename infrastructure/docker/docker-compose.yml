@@ -1,0 +1,35 @@
+# Local development foundation for Ordra.
+# Redis is intentionally omitted until caching/queues are required.
+#
+# App only:
+#   docker compose -f infrastructure/docker/docker-compose.yml up --build web
+#
+# Optional local Postgres:
+#   docker compose -f infrastructure/docker/docker-compose.yml --profile local-db up -d postgres
+
+services:
+  web:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../../.env.example
+    environment:
+      NODE_ENV: production
+
+  postgres:
+    image: postgres:16-alpine
+    profiles: ["local-db"]
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ordra
+      POSTGRES_PASSWORD: ordra
+      POSTGRES_DB: ordra
+    volumes:
+      - ordra_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  ordra_postgres_data:

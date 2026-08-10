@@ -1,0 +1,10 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
+
+autoInstallPeers: true
+strictPeerDependencies: false

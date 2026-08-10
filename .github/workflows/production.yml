@@ -1,0 +1,21 @@
+# Production deployments — disabled until production environment is ready.
+
+name: Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  production:
+    name: Production placeholder
+    runs-on: ubuntu-latest
+    if: false # Disabled until production deployment is configured
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Placeholder
+        run: echo "Configure Vercel/GCP production deployment before enabling this workflow."
