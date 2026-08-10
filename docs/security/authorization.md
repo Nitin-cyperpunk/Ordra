@@ -20,6 +20,8 @@ Ownership transfer is intentionally blocked (`owner_id` immutable; cannot invite
 2. **Database layer** — RLS on `memberships`, `cafe_invitations`, and membership-aware `cafes` policies
 3. Never rely on UI hiding alone
 
+See Module 4 audit: [tenant-isolation-audit.md](./tenant-isolation-audit.md).
+
 ## What you should learn
 
 - Defense in depth (app + DB)
