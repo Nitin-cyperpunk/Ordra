@@ -10,12 +10,14 @@
 4. Enable RLS on every exposed table.
 5. Soft-delete only when product requires history; otherwise hard delete with audit logs.
 
-## Planned core entities (later)
+## Planned core entities
 
 | Entity | Tenant scoped | Notes |
 |---|---|---|
-| `cafes` | — | Tenant root |
-| `profiles` / `memberships` | yes | User ↔ cafe roles |
+| `cafes` | — (tenant root) | **Implemented (Module 2)** — `owner_id` + membership-aware RLS |
+| `memberships` | yes | **Implemented (Module 3)** — roles: owner/manager/staff |
+| `cafe_invitations` | yes | **Implemented (Module 3)** — email invite architecture |
+| `profiles` / finer RBAC | yes | Later refinement |
 | `tables` | yes | Floor / QR |
 | `menu_categories` | yes | |
 | `menu_items` | yes | |
@@ -23,6 +25,12 @@
 | `order_items` | yes | |
 | `payments` | yes | Razorpay refs |
 | `subscriptions` | cafe-level | SaaS billing |
+
+## Implemented: `public.cafes`
+
+Columns: `id`, `name`, `slug` (unique), `owner_id` → `auth.users`, `created_at`, `updated_at`.
+
+RLS (authenticated): select/insert/update/delete only when `owner_id = auth.uid()`.
 
 ## Migrations
 

@@ -19,11 +19,20 @@ App: [http://localhost:3000](http://localhost:3000)
 
 ## Optional local database
 
+Prefer **Supabase CLI** (Auth + RLS fidelity):
+
+```bash
+pnpm db:start
+pnpm db:status -o env
+```
+
+See [supabase-local.md](./supabase-local.md).
+
+Bare Postgres via Docker Compose remains available for experiments only:
+
 ```bash
 docker compose -f infrastructure/docker/docker-compose.yml --profile local-db up -d postgres
 ```
-
-Prefer Supabase cloud/local CLI for Auth + RLS fidelity.
 
 ## Quality commands
 

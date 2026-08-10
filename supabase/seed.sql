@@ -1,0 +1,3 @@
+-- Seed data for local development.
+-- Loaded by `supabase db reset` when [db.seed] is enabled in config.toml.
+-- Add cafe/staff fixtures when Auth + multi-tenancy modules land.
