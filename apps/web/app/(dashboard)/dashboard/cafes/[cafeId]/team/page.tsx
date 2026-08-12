@@ -1,18 +1,16 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
 
+import { getCafeById } from "@/features/cafes/actions";
+import { requireCafeAccess } from "@/features/memberships/access";
 import {
   getCafeMemberships,
-  getMyRoleForCafe,
   getPendingInvitations,
 } from "@/features/memberships/actions";
 import { InviteMemberForm } from "@/features/memberships/components/invite-member-form";
 import { MemberRow } from "@/features/memberships/components/member-row";
 import { PendingCafeInvites } from "@/features/memberships/components/pending-cafe-invites";
 import { canManageMembers } from "@/features/memberships/types";
-import { getOwnedCafeById } from "@/features/cafes/actions";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/server";
 
 type TeamPageProps = {
   params: Promise<{ cafeId: string }>;
@@ -20,22 +18,13 @@ type TeamPageProps = {
 
 export async function generateMetadata({ params }: TeamPageProps) {
   const { cafeId } = await params;
-  const cafe = await getOwnedCafeById(cafeId);
+  const cafe = await getCafeById(cafeId);
   return { title: cafe ? `Team · ${cafe.name}` : "Team · Ordra" };
 }
 
 export default async function CafeTeamPage({ params }: TeamPageProps) {
   const { cafeId } = await params;
-  const cafe = await getOwnedCafeById(cafeId);
-  if (!cafe) notFound();
-
-  const role = await getMyRoleForCafe(cafeId);
-  if (!role) redirect("/dashboard");
-
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const currentUserId =
-    typeof claimsData?.claims?.sub === "string" ? claimsData.claims.sub : "";
+  const { cafe, role, user } = await requireCafeAccess(cafeId);
 
   const [members, invitations] = await Promise.all([
     getCafeMemberships(cafeId),
@@ -50,7 +39,7 @@ export default async function CafeTeamPage({ params }: TeamPageProps) {
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">{cafe.name}</h1>
         <p className="text-muted-foreground text-sm">
-          Your role: <span className="text-foreground">{role}</span>
+          Your role: <span className="text-foreground capitalize">{role}</span>
         </p>
       </div>
 
@@ -63,7 +52,7 @@ export default async function CafeTeamPage({ params }: TeamPageProps) {
               cafeId={cafeId}
               membership={membership}
               actorRole={role}
-              currentUserId={currentUserId}
+              currentUserId={user.id}
             />
           ))}
         </ul>
@@ -85,7 +74,7 @@ export default async function CafeTeamPage({ params }: TeamPageProps) {
 
       <div className="flex gap-2">
         <Button asChild variant="outline" size="sm">
-          <Link href={`/dashboard/cafes/${cafeId}`}>Cafe settings</Link>
+          <Link href={`/dashboard/cafes/${cafeId}/settings/profile`}>Cafe settings</Link>
         </Button>
         <Button asChild variant="outline" size="sm">
           <Link href="/dashboard">All cafes</Link>

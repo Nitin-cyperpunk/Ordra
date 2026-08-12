@@ -10,12 +10,16 @@ export interface TenantScoped {
   cafeId: CafeId;
 }
 
-/** Cafe tenant root (Module 2). */
+/** Cafe tenant root. */
 export interface Cafe {
   id: CafeId;
   name: string;
   slug: string;
   ownerId: UserId;
+  description?: string | null;
+  timezone?: string;
+  currency?: string;
+  status?: "active" | "inactive";
   createdAt: string;
   updatedAt: string;
 }

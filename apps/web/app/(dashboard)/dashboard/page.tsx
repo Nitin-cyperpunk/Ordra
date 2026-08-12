@@ -20,10 +20,11 @@ export default async function DashboardPage() {
   ]);
 
   if (memberships.length === 0 && pendingInvites.length === 0) {
-    redirect("/onboarding/cafe");
+    redirect("/onboarding");
   }
 
   const active = await resolveActiveCafe();
+  const activeMembership = memberships.find((item) => item.cafe_id === active?.cafeId);
 
   return (
     <main className="mx-auto max-w-lg space-y-6">
@@ -31,11 +32,11 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Your cafes</h1>
         <p className="text-muted-foreground text-sm">
           Memberships determine which cafes you can access.
-          {active ? (
+          {activeMembership ? (
             <>
               {" "}
               Active:{" "}
-              <span className="text-foreground">{active.cafeId.slice(0, 8)}…</span>
+              <span className="text-foreground">{activeMembership.cafe.name}</span>
             </>
           ) : null}
         </p>
@@ -61,14 +62,22 @@ export default async function DashboardPage() {
           ))}
         </ul>
       ) : (
-        <p className="text-muted-foreground text-sm">
-          Accept an invitation above, or create a cafe.
-        </p>
+        <div className="space-y-3 rounded-md border border-dashed px-4 py-6 text-center">
+          <p className="text-sm font-medium">No cafe workspace found.</p>
+          <p className="text-muted-foreground text-sm">
+            Accept an invitation above, or create your cafe to continue.
+          </p>
+          <Button asChild>
+            <Link href="/onboarding">Create Cafe</Link>
+          </Button>
+        </div>
       )}
 
-      <Button asChild variant="outline">
-        <Link href="/onboarding/cafe">Create another cafe</Link>
-      </Button>
+      {memberships.length > 0 ? (
+        <Button asChild variant="outline">
+          <Link href="/onboarding">Create another cafe</Link>
+        </Button>
+      ) : null}
     </main>
   );
 }

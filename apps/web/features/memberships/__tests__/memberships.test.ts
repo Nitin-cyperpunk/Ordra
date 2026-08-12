@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { mapMembershipError } from "../errors";
+import { membershipSatisfiesRoles } from "../access";
 import { inviteMemberSchema, updateMemberRoleSchema } from "../schemas";
 import { canEditCafeSettings, canManageMembers, isCafeRole } from "../types";
 
@@ -48,6 +49,17 @@ describe("updateMemberRoleSchema", () => {
       role: "owner",
     });
     assert.equal(result.success, false);
+  });
+});
+
+describe("membershipSatisfiesRoles", () => {
+  it("allows any role when unrestricted", () => {
+    assert.equal(membershipSatisfiesRoles("staff"), true);
+  });
+
+  it("enforces required roles for owner-only operations", () => {
+    assert.equal(membershipSatisfiesRoles("owner", ["owner"]), true);
+    assert.equal(membershipSatisfiesRoles("staff", ["owner"]), false);
   });
 });
 

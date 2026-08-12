@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 import { CreateCafeForm } from "@/features/cafes/components/create-cafe-form";
 import {
@@ -8,17 +7,13 @@ import {
 } from "@/features/onboarding/state";
 
 export const metadata: Metadata = {
-  title: "Create cafe · Ordra",
+  title: "Onboarding · Ordra",
 };
 
-export default async function OnboardingCafePage() {
+export default async function OnboardingPage() {
   const state = await getOnboardingState();
 
-  if (state === "UNAUTHENTICATED") {
-    redirect("/login");
-  }
-
-  if (state === "AUTHENTICATED_WITH_CAFE") {
+  if (state !== "AUTHENTICATED_NO_CAFE") {
     await redirectForOnboardingState(state);
   }
 

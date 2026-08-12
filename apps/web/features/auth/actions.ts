@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { mapAuthError } from "@/features/auth/errors";
 import { loginSchema, signupSchema } from "@/features/auth/schemas";
+import { clearActiveCafeId } from "@/features/memberships/active-cafe";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthActionState = {
@@ -106,5 +107,6 @@ export async function loginAction(
 export async function logoutAction(): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  await clearActiveCafeId();
   redirect("/login");
 }

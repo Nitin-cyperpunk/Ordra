@@ -4,6 +4,10 @@
 
 Role-Based Access Control scoped to a cafe (tenant).
 
+Active cafe context (Module 5): URL `/dashboard/cafes/[cafeId]` + httpOnly cookie
+`ordra_active_cafe_id`. Membership is always re-validated server-side via
+`requireCafeAccess` and RLS — never trusted from the client alone.
+
 ## Roles (Module 3)
 
 | Role | Scope | Capabilities |
