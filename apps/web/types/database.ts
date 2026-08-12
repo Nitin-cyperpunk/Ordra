@@ -188,6 +188,42 @@ export type Database = {
           },
         ];
       };
+      waitlist: {
+        Row: {
+          cafe_address: string;
+          cafe_name: string;
+          created_at: string;
+          email: string;
+          id: string;
+          owner_name: string;
+          phone: string;
+          status: Database["public"]["Enums"]["waitlist_status"];
+          updated_at: string;
+        };
+        Insert: {
+          cafe_address: string;
+          cafe_name: string;
+          created_at?: string;
+          email: string;
+          id?: string;
+          owner_name: string;
+          phone: string;
+          status?: Database["public"]["Enums"]["waitlist_status"];
+          updated_at?: string;
+        };
+        Update: {
+          cafe_address?: string;
+          cafe_name?: string;
+          created_at?: string;
+          email?: string;
+          id?: string;
+          owner_name?: string;
+          phone?: string;
+          status?: Database["public"]["Enums"]["waitlist_status"];
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -202,6 +238,7 @@ export type Database = {
       cafe_invite_status: "pending" | "accepted" | "revoked";
       cafe_role: "owner" | "manager" | "staff";
       cafe_status: "active" | "inactive";
+      waitlist_status: "pending" | "contacted" | "archived";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -331,6 +368,7 @@ export const Constants = {
       cafe_invite_status: ["pending", "accepted", "revoked"],
       cafe_role: ["owner", "manager", "staff"],
       cafe_status: ["active", "inactive"],
+      waitlist_status: ["pending", "contacted", "archived"],
     },
   },
 } as const;

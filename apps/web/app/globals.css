@@ -24,6 +24,13 @@
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
     --radius: 0.5rem;
+
+    /* Ordra brand accents (Coming Soon / marketing surfaces) */
+    --ordra-orange: 28 95% 55%;
+    --ordra-gold: 38 90% 58%;
+    --ordra-pink: 330 75% 62%;
+    --ordra-purple: 262 70% 58%;
+    --ordra-blue: 217 85% 60%;
   }
 
   * {
@@ -32,5 +39,28 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer components {
+  .ordra-gradient-btn {
+    background-image: linear-gradient(
+      115deg,
+      hsl(var(--ordra-orange)) 0%,
+      hsl(var(--ordra-pink)) 42%,
+      hsl(var(--ordra-purple)) 72%,
+      hsl(var(--ordra-blue)) 100%
+    );
+  }
+}
+
+@layer utilities {
+  @keyframes ordra-bg-zoom {
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.06);
+    }
   }
 }
