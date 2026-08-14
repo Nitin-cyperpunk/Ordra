@@ -18,9 +18,8 @@
 | `memberships` | yes | **Implemented (Module 3)** — roles: owner/manager/staff |
 | `cafe_invitations` | yes | **Implemented (Module 3)** — email invite architecture |
 | `profiles` / finer RBAC | yes | Later refinement |
-| `tables` | yes | Floor / QR (Module 7) |
-| `menu_categories` | yes | |
-| `menu_items` | yes | |
+| `tables` / `cafe_tables` | yes | **Module 7** — `cafe_tables` + `cafe_table_sections`; see `docs/database/tables.md` |
+| `menu_categories` / `menu_items` | yes | **Module 8** — see `docs/database/menu.md` |
 | `orders` | yes | |
 | `order_items` | yes | |
 | `payments` | yes | Razorpay refs |
@@ -38,6 +37,29 @@
 
 **RLS (authenticated):** members SELECT; owner/manager UPDATE; owner DELETE; insert as self-owner.
 `owner_id` immutable via trigger. Storage upload for logos is deferred (see `features/cafes/storage.ts`).
+
+## Implemented: `public.cafe_table_sections` + `public.cafe_tables` (Module 7)
+
+**Sections:** `id`, `cafe_id`, `name` (unique per cafe, case-insensitive), `sort_order`, timestamps.
+
+**Tables:** `id`, `cafe_id`, `code` (unique per cafe), `capacity` (1–99), `status` (`active`|`inactive`),
+optional `section_id`, `public_token` (future QR), `sort_order`, timestamps.
+
+**RLS:** members SELECT; owner/manager INSERT/UPDATE/DELETE. `cafe_id` and `public_token` immutable.
+Same-cafe section enforced by trigger. Prefer deactivate over hard delete.
+
+See `docs/database/tables.md` and `supabase/scripts/module7_table_attack_scenarios.sql`.
+
+## Implemented: `public.menu_categories` + `public.menu_items` (Module 8)
+
+**Categories:** unique name per cafe, `display_order`, `is_active`.
+
+**Items:** `price numeric(10,2)`, `diet` (`vegetarian`|`non_vegetarian`), `is_available`,
+`image_path` (Storage path in `cafe-assets`), same-cafe category trigger, immutable `cafe_id`.
+
+**RLS:** members SELECT; owner/manager write. Storage writes gated by cafe folder + role.
+
+See `docs/database/menu.md` and `supabase/scripts/module8_menu_attack_scenarios.sql`.
 
 ## Migrations
 
