@@ -53,8 +53,14 @@ export default async function CafeDashboardPage({ params }: CafeDashboardPagePro
       </div>
 
       <div className="flex flex-wrap gap-2">
+        <Button asChild size="sm">
+          <Link href={`/dashboard/cafes/${cafeId}/tables`}>Tables</Link>
+        </Button>
+        <Button asChild size="sm" variant="outline">
+          <Link href={`/dashboard/cafes/${cafeId}/menu`}>Menu</Link>
+        </Button>
         {canEditCafeSettings(role) ? (
-          <Button asChild size="sm">
+          <Button asChild size="sm" variant="outline">
             <Link href={`/dashboard/cafes/${cafeId}/settings/profile`}>Settings</Link>
           </Button>
         ) : (

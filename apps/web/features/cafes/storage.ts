@@ -1,12 +1,12 @@
 /**
- * Cafe logo / cover Storage architecture (Module 6 — deferred implementation).
+ * Cafe logo / cover Storage architecture.
  *
- * Storage is enabled in supabase/config.toml but no buckets or policies exist yet.
- * Do not wire a hacky client-only upload. Implement with a dedicated migration when ready.
+ * Bucket `cafe-assets` ships with Module 8 (menu images). Logo/cover upload UI
+ * remains deferred but can reuse the same bucket and path helpers.
  *
  * ## Bucket
  * - Name: `cafe-assets`
- * - Public read for logo/cover display (or signed URLs if private later)
+ * - Public read for display URLs
  * - Max file size: 2 MiB
  * - Allowed MIME: image/png, image/jpeg, image/webp
  *
@@ -14,23 +14,15 @@
  * ```text
  * cafe/{cafe_id}/logo/{uuid}.{ext}
  * cafe/{cafe_id}/cover/{uuid}.{ext}
+ * cafe/{cafe_id}/menu/{item_id}/{uuid}.{ext}
  * ```
- * Never trust client-provided cafe_id alone — verify membership (owner/manager)
- * in a Server Action before creating a signed upload URL or accepting the object.
  *
  * ## Authorization
- * - INSERT/UPDATE/DELETE: owner or manager of that cafe_id path segment
- * - SELECT: public (for logo_url) OR authenticated members — product decision
+ * - INSERT/UPDATE/DELETE: owner or manager of that cafe_id path segment (Storage RLS)
+ * - SELECT: public (bucket is public for future digital menu)
  * - Staff: read-only; no upload
  *
- * ## App columns
- * - `cafes.logo_url` / `cafes.cover_image_url` store the public URL or storage path
- *   after a successful upload. Until Storage ships, leave these null / manual URL.
- *
- * ## Security checklist
- * - Validate MIME + size server-side
- * - Reject path traversal and foreign cafe_id prefixes
- * - RLS on storage.objects using private.is_cafe_member / current_user_cafe_role
+ * See `features/menu/storage.ts` and migration `20260814200100_create_cafe_assets_storage.sql`.
  */
 
 export const CAFE_ASSETS_BUCKET = "cafe-assets";

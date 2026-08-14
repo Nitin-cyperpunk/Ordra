@@ -1,7 +1,24 @@
-# Cafe assets Storage (future)
+# Cafe assets Storage
 
-Logo/cover upload is **deferred** until a Storage bucket + RLS ship.
+Bucket `cafe-assets` is created in Module 8:
 
-Planned path: `cafe/{cafe_id}/logo/...` in bucket `cafe-assets`.
+`20260814200100_create_cafe_assets_storage.sql`
 
-See application notes in `apps/web/features/cafes/storage.ts`.
+## Paths
+
+```text
+cafe/{cafe_id}/menu/{item_id}/{uuid}.{ext}   # menu images (implemented)
+cafe/{cafe_id}/logo/{uuid}.{ext}             # reserved
+cafe/{cafe_id}/cover/{uuid}.{ext}            # reserved
+```
+
+## Policies
+
+- SELECT: public (future digital menu / QR)
+- INSERT/UPDATE/DELETE: authenticated owner/manager of the cafe UUID in the path
+
+## Limits
+
+- 2 MiB
+- PNG / JPEG / WebP only (HEIC deferred)
+- No Cloudinary/CDN transforms yet

@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
@@ -74,6 +74,95 @@ export type Database = {
             columns: ["cafe_id"];
             isOneToOne: false;
             referencedRelation: "cafes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      cafe_table_sections: {
+        Row: {
+          cafe_id: string;
+          created_at: string;
+          id: string;
+          name: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          cafe_id: string;
+          created_at?: string;
+          id?: string;
+          name: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: {
+          cafe_id?: string;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cafe_table_sections_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: false;
+            referencedRelation: "cafes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      cafe_tables: {
+        Row: {
+          cafe_id: string;
+          capacity: number;
+          code: string;
+          created_at: string;
+          id: string;
+          public_token: string;
+          section_id: string | null;
+          sort_order: number;
+          status: Database["public"]["Enums"]["cafe_table_status"];
+          updated_at: string;
+        };
+        Insert: {
+          cafe_id: string;
+          capacity: number;
+          code: string;
+          created_at?: string;
+          id?: string;
+          public_token?: string;
+          section_id?: string | null;
+          sort_order?: number;
+          status?: Database["public"]["Enums"]["cafe_table_status"];
+          updated_at?: string;
+        };
+        Update: {
+          cafe_id?: string;
+          capacity?: number;
+          code?: string;
+          created_at?: string;
+          id?: string;
+          public_token?: string;
+          section_id?: string | null;
+          sort_order?: number;
+          status?: Database["public"]["Enums"]["cafe_table_status"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cafe_tables_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: false;
+            referencedRelation: "cafes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cafe_tables_section_id_fkey";
+            columns: ["section_id"];
+            isOneToOne: false;
+            referencedRelation: "cafe_table_sections";
             referencedColumns: ["id"];
           },
         ];
@@ -188,6 +277,143 @@ export type Database = {
           },
         ];
       };
+      menu_categories: {
+        Row: {
+          cafe_id: string;
+          created_at: string;
+          description: string | null;
+          display_order: number;
+          id: string;
+          is_active: boolean;
+          name: string;
+          updated_at: string;
+        };
+        Insert: {
+          cafe_id: string;
+          created_at?: string;
+          description?: string | null;
+          display_order?: number;
+          id?: string;
+          is_active?: boolean;
+          name: string;
+          updated_at?: string;
+        };
+        Update: {
+          cafe_id?: string;
+          created_at?: string;
+          description?: string | null;
+          display_order?: number;
+          id?: string;
+          is_active?: boolean;
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "menu_categories_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: false;
+            referencedRelation: "cafes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      menu_items: {
+        Row: {
+          cafe_id: string;
+          category_id: string;
+          created_at: string;
+          description: string | null;
+          diet: Database["public"]["Enums"]["menu_item_diet"];
+          display_order: number;
+          id: string;
+          image_path: string | null;
+          is_available: boolean;
+          name: string;
+          price: number;
+          updated_at: string;
+        };
+        Insert: {
+          cafe_id: string;
+          category_id: string;
+          created_at?: string;
+          description?: string | null;
+          diet?: Database["public"]["Enums"]["menu_item_diet"];
+          display_order?: number;
+          id?: string;
+          image_path?: string | null;
+          is_available?: boolean;
+          name: string;
+          price: number;
+          updated_at?: string;
+        };
+        Update: {
+          cafe_id?: string;
+          category_id?: string;
+          created_at?: string;
+          description?: string | null;
+          diet?: Database["public"]["Enums"]["menu_item_diet"];
+          display_order?: number;
+          id?: string;
+          image_path?: string | null;
+          is_available?: boolean;
+          name?: string;
+          price?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "menu_items_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: false;
+            referencedRelation: "cafes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "menu_items_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "menu_categories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      waitlist: {
+        Row: {
+          cafe_address: string;
+          cafe_name: string;
+          created_at: string;
+          email: string;
+          id: string;
+          owner_name: string;
+          phone: string;
+          status: Database["public"]["Enums"]["waitlist_status"];
+          updated_at: string;
+        };
+        Insert: {
+          cafe_address: string;
+          cafe_name: string;
+          created_at?: string;
+          email: string;
+          id?: string;
+          owner_name: string;
+          phone: string;
+          status?: Database["public"]["Enums"]["waitlist_status"];
+          updated_at?: string;
+        };
+        Update: {
+          cafe_address?: string;
+          cafe_name?: string;
+          created_at?: string;
+          email?: string;
+          id?: string;
+          owner_name?: string;
+          phone?: string;
+          status?: Database["public"]["Enums"]["waitlist_status"];
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -202,6 +428,9 @@ export type Database = {
       cafe_invite_status: "pending" | "accepted" | "revoked";
       cafe_role: "owner" | "manager" | "staff";
       cafe_status: "active" | "inactive";
+      cafe_table_status: "active" | "inactive";
+      menu_item_diet: "vegetarian" | "non_vegetarian";
+      waitlist_status: "pending" | "contacted" | "archived";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -331,6 +560,9 @@ export const Constants = {
       cafe_invite_status: ["pending", "accepted", "revoked"],
       cafe_role: ["owner", "manager", "staff"],
       cafe_status: ["active", "inactive"],
+      cafe_table_status: ["active", "inactive"],
+      menu_item_diet: ["vegetarian", "non_vegetarian"],
+      waitlist_status: ["pending", "contacted", "archived"],
     },
   },
 } as const;
