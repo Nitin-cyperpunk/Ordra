@@ -13,6 +13,7 @@ type MenuItemsListProps = {
   categories: MenuCategory[];
   canManage: boolean;
   currency?: string;
+  filteredEmpty?: boolean;
 };
 
 export function MenuItemsList({
@@ -21,11 +22,14 @@ export function MenuItemsList({
   categories,
   canManage,
   currency = "INR",
+  filteredEmpty = false,
 }: MenuItemsListProps) {
   if (items.length === 0) {
     return (
       <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
-        No menu items match these filters.
+        {filteredEmpty
+          ? "No items match your search. Try clearing filters."
+          : "No menu items to show yet."}
       </p>
     );
   }

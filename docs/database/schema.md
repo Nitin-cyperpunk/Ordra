@@ -38,17 +38,21 @@
 **RLS (authenticated):** members SELECT; owner/manager UPDATE; owner DELETE; insert as self-owner.
 `owner_id` immutable via trigger. Storage upload for logos is deferred (see `features/cafes/storage.ts`).
 
-## Implemented: `public.cafe_table_sections` + `public.cafe_tables` (Module 7)
+## Implemented: `public.cafe_table_sections` + `public.cafe_tables` (Module 7 + 10)
 
 **Sections:** `id`, `cafe_id`, `name` (unique per cafe, case-insensitive), `sort_order`, timestamps.
 
 **Tables:** `id`, `cafe_id`, `code` (unique per cafe), `capacity` (1–99), `status` (`active`|`inactive`),
-optional `section_id`, `public_token` (future QR), `sort_order`, timestamps.
+optional `section_id`, `public_token` (opaque QR id), `sort_order`, timestamps.
 
 **RLS:** members SELECT; owner/manager INSERT/UPDATE/DELETE. `cafe_id` and `public_token` immutable.
 Same-cafe section enforced by trigger. Prefer deactivate over hard delete.
 
-See `docs/database/tables.md` and `supabase/scripts/module7_table_attack_scenarios.sql`.
+**Public QR (Module 10):** view `public.public_cafe_tables` (active only). Guest URL
+`/c/{slug}?table={public_token}`. Owner QR under Tables. Migration
+`20260815210000_public_cafe_tables_for_qr.sql`.
+
+See `docs/database/tables.md` and `supabase/scripts/module10_table_qr_audit.sql`.
 
 ## Implemented: `public.menu_categories` + `public.menu_items` (Module 8)
 
@@ -60,6 +64,18 @@ See `docs/database/tables.md` and `supabase/scripts/module7_table_attack_scenari
 **RLS:** members SELECT; owner/manager write. Storage writes gated by cafe folder + role.
 
 See `docs/database/menu.md` and `supabase/scripts/module8_menu_attack_scenarios.sql`.
+
+## Implemented: public digital menu read (Module 9 — first slice)
+
+Route: `/c/[cafeSlug]` (read-only). Anon + authenticated may SELECT active cafes,
+active categories, and available items via
+`20260815183000_public_menu_read_policies.sql`.
+
+**Column hardening:** `public.public_cafes` view + anon column grants only
+(`id`, `name`, `slug`, `description`, `logo_url`, `currency`, `city`, `status`).
+Migration: `20260815190000_harden_public_cafe_data_exposure.sql`.
+
+See `docs/database/public-menu.md`. Cart / orders deferred; table QR context is Module 10.
 
 ## Migrations
 

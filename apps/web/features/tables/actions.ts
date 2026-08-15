@@ -75,6 +75,29 @@ export type ListTablesOptions = {
   q?: string;
 };
 
+export async function getCafeTableById(
+  cafeId: string,
+  tableId: string,
+): Promise<CafeTable | null> {
+  await requireCafeAccess(cafeId);
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("cafe_tables")
+    .select(
+      `${CAFE_TABLE_SELECT_COLUMNS}, cafe_table_sections ( ${CAFE_TABLE_SECTION_SELECT_COLUMNS} )`,
+    )
+    .eq("cafe_id", cafeId)
+    .eq("id", tableId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error("Unable to load table.");
+  }
+
+  return data ? mapTableRow(data as Record<string, unknown>) : null;
+}
+
 export async function listCafeTables(
   cafeId: string,
   options: ListTablesOptions = {},

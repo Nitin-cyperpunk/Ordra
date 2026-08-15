@@ -9,28 +9,44 @@ type TablesListProps = {
   tables: CafeTable[];
   sections: CafeTableSection[];
   canManage: boolean;
+  filteredEmpty?: boolean;
 };
 
 function StatusBadge({ status }: { status: "active" | "inactive" }) {
   return (
     <span
       className={cn(
-        "inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize",
+        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium capitalize",
         status === "active"
-          ? "bg-emerald-500/10 text-emerald-700"
+          ? "text-success-foreground bg-emerald-500/10"
           : "bg-muted text-muted-foreground",
       )}
     >
-      {status}
+      <span
+        className={cn(
+          "size-1.5 rounded-full",
+          status === "active" ? "bg-emerald-600" : "bg-muted-foreground/50",
+        )}
+        aria-hidden
+      />
+      {status === "active" ? "Active" : "Inactive"}
     </span>
   );
 }
 
-export function TablesList({ cafeId, tables, sections, canManage }: TablesListProps) {
+export function TablesList({
+  cafeId,
+  tables,
+  sections,
+  canManage,
+  filteredEmpty = false,
+}: TablesListProps) {
   if (tables.length === 0) {
     return (
       <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
-        No tables match these filters.
+        {filteredEmpty
+          ? "No tables match your search. Try clearing filters."
+          : "No tables to show yet."}
       </p>
     );
   }
@@ -41,7 +57,7 @@ export function TablesList({ cafeId, tables, sections, canManage }: TablesListPr
         <thead className="bg-muted/40 text-muted-foreground border-b text-xs uppercase tracking-wide">
           <tr>
             <th className="px-3 py-2 font-medium">Table</th>
-            <th className="px-3 py-2 font-medium">Capacity</th>
+            <th className="px-3 py-2 font-medium">Seats</th>
             <th className="px-3 py-2 font-medium">Section</th>
             <th className="px-3 py-2 font-medium">Status</th>
             <th className="px-3 py-2 font-medium">Created</th>

@@ -416,7 +416,43 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      public_cafes: {
+        Row: {
+          city: string | null;
+          currency: string | null;
+          description: string | null;
+          id: string | null;
+          logo_url: string | null;
+          name: string | null;
+          slug: string | null;
+          status: Database["public"]["Enums"]["cafe_status"] | null;
+        };
+        Relationships: [];
+      };
+      public_cafe_tables: {
+        Row: {
+          cafe_id: string | null;
+          code: string | null;
+          public_token: string | null;
+          status: Database["public"]["Enums"]["cafe_table_status"] | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cafe_tables_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: false;
+            referencedRelation: "cafes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "cafe_tables_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: false;
+            referencedRelation: "public_cafes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Functions: {
       current_user_cafe_role: {

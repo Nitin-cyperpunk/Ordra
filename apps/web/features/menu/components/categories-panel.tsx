@@ -182,7 +182,7 @@ export function CategoriesPanel({
             <p className="text-destructive text-sm">{createState.error}</p>
           ) : null}
           {createState.success ? (
-            <p className="text-sm text-emerald-700">{createState.success}</p>
+            <p className="text-success-foreground text-sm">{createState.success}</p>
           ) : null}
           <Button type="submit" size="sm" disabled={createPending}>
             {createPending ? "Adding…" : "Add category"}

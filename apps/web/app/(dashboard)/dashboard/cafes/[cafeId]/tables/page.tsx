@@ -1,15 +1,15 @@
-import Link from "next/link";
-
 import { getCafeById } from "@/features/cafes/actions";
 import { requireCafeAccess } from "@/features/memberships/access";
-import { SyncActiveCafe } from "@/features/memberships/components/sync-active-cafe";
 import { listCafeTableSections, listCafeTables } from "@/features/tables/actions";
 import { AddTableForm } from "@/features/tables/components/add-table-form";
 import { BulkCreateTablesForm } from "@/features/tables/components/bulk-create-tables-form";
 import { SectionsPanel } from "@/features/tables/components/sections-panel";
 import { TablesFilters, TablesList } from "@/features/tables/components/tables-list";
 import { canManageTables, type CafeTableStatus } from "@/features/tables/types";
+import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { QrCode } from "lucide-react";
 
 type TablesPageProps = {
   params: Promise<{ cafeId: string }>;
@@ -37,14 +37,16 @@ function parseStatus(value: string | undefined): CafeTableStatus | "all" {
 export default async function CafeTablesPage({ params, searchParams }: TablesPageProps) {
   const { cafeId } = await params;
   const filters = await searchParams;
-  const { cafe, role } = await requireCafeAccess(cafeId);
+  const { role } = await requireCafeAccess(cafeId);
   const manage = canManageTables(role);
 
   const q = filters.q?.trim() ?? "";
   const status = parseStatus(filters.status);
   const sectionId = filters.section?.trim() || "all";
+  const hasFilters = Boolean(q) || status !== "all" || sectionId !== "all";
 
-  const [tables, sections] = await Promise.all([
+  const [allTables, tables, sections] = await Promise.all([
+    listCafeTables(cafeId),
     listCafeTables(cafeId, {
       q: q || undefined,
       status,
@@ -53,63 +55,83 @@ export default async function CafeTablesPage({ params, searchParams }: TablesPag
     listCafeTableSections(cafeId),
   ]);
 
-  return (
-    <main className="mx-auto max-w-4xl space-y-8">
-      <SyncActiveCafe cafeId={cafeId} />
+  const isTrulyEmpty = allTables.length === 0;
 
-      <div className="space-y-2">
-        <p className="text-muted-foreground text-xs uppercase tracking-[0.2em]">
-          Cafe workspace · Tables
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">{cafe.name}</h1>
-        <p className="text-muted-foreground text-sm">
-          Configure physical tables for this cafe. Booking, QR ordering, and occupancy
-          come later.
-        </p>
-        <p className="text-muted-foreground text-sm">
-          Your role: <span className="text-foreground capitalize">{role}</span>
-          {" · "}
-          {tables.length} shown
-        </p>
+  return (
+    <main className="space-y-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-semibold tracking-tight">Tables</h2>
+          <p className="text-muted-foreground text-sm">
+            Add tables, then download a QR for each so guests open your menu with table
+            context.
+          </p>
+        </div>
+        <Button asChild variant="outline" className="min-h-11 shrink-0">
+          <Link href={`/dashboard/cafes/${cafeId}/tables/qr`}>
+            <QrCode className="size-4" aria-hidden />
+            Cafe QR
+          </Link>
+        </Button>
       </div>
 
-      <TablesFilters
-        cafeId={cafeId}
-        sections={sections}
-        q={q}
-        status={status}
-        sectionId={sectionId}
-      />
-
-      <TablesList
-        cafeId={cafeId}
-        tables={tables}
-        sections={sections}
-        canManage={manage}
-      />
-
-      {manage ? (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <AddTableForm cafeId={cafeId} sections={sections} />
-          <BulkCreateTablesForm cafeId={cafeId} sections={sections} />
-        </div>
+      {isTrulyEmpty ? (
+        <EmptyState
+          title="No tables yet"
+          description="Add your cafe tables so you can start managing them. You can create them one by one or add several at once."
+        >
+          {manage ? null : (
+            <p className="text-muted-foreground text-sm">
+              Ask an owner or manager to add tables.
+            </p>
+          )}
+        </EmptyState>
       ) : (
-        <p className="text-muted-foreground text-sm">
-          Only owners and managers can add or edit tables. You can still view the floor
-          list.
-        </p>
+        <>
+          <TablesFilters
+            cafeId={cafeId}
+            sections={sections}
+            q={q}
+            status={status}
+            sectionId={sectionId}
+          />
+          <TablesList
+            cafeId={cafeId}
+            tables={tables}
+            sections={sections}
+            canManage={manage}
+            filteredEmpty={hasFilters && tables.length === 0}
+          />
+        </>
       )}
 
-      <SectionsPanel cafeId={cafeId} sections={sections} canManage={manage} />
-
-      <div className="flex flex-wrap gap-2">
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/dashboard/cafes/${cafeId}`}>Cafe workspace</Link>
-        </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/dashboard">All cafes</Link>
-        </Button>
-      </div>
+      {manage ? (
+        <div className="space-y-4">
+          <div id="add-table">
+            <AddTableForm cafeId={cafeId} sections={sections} />
+          </div>
+          <details className="rounded-lg border p-4">
+            <summary className="cursor-pointer text-sm font-medium">
+              Add several tables at once
+            </summary>
+            <div className="mt-4">
+              <BulkCreateTablesForm cafeId={cafeId} sections={sections} />
+            </div>
+          </details>
+          <details className="rounded-lg border p-4">
+            <summary className="cursor-pointer text-sm font-medium">
+              Sections (Indoor, Outdoor…)
+            </summary>
+            <div className="mt-4">
+              <SectionsPanel cafeId={cafeId} sections={sections} canManage={manage} />
+            </div>
+          </details>
+        </div>
+      ) : !isTrulyEmpty ? (
+        <p className="text-muted-foreground text-sm">
+          You can view tables. Only owners and managers can add or edit them.
+        </p>
+      ) : null}
     </main>
   );
 }

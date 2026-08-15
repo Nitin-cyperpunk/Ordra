@@ -121,7 +121,7 @@ export function MenuItemCard({
           {" · "}
           {dietLabel(item.diet)}
           {" · "}
-          <span className={item.is_available ? "text-emerald-700" : ""}>
+          <span className={item.is_available ? "text-success-foreground" : ""}>
             {item.is_available ? "Available" : "Unavailable"}
           </span>
         </p>

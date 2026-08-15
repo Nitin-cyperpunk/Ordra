@@ -401,7 +401,7 @@ export async function createItemAction(
 
   if (error) return { error: mapMenuError(error) };
   revalidateMenu(cafeId);
-  return { success: `Item “${name}” created.` };
+  return { success: `“${name}” added to your menu.` };
 }
 
 export async function updateItemAction(
