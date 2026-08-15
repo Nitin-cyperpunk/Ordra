@@ -47,3 +47,5 @@ Writes remain owner/manager.
 ## Route
 
 `/dashboard/cafes/[cafeId]/menu` (`robots: noindex`)
+
+Smart import (Module 10.7): `/dashboard/cafes/[cafeId]/menu/import` — see `docs/database/menu-import.md`.

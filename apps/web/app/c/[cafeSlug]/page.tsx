@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 
 import { getPublicMenuBySlug } from "@/features/public-menu/queries";
-import { PublicMenuView } from "@/features/public-menu/components/public-menu-view";
+import { PublicMenuExperience } from "@/features/public-menu/components/public-menu-experience";
+import { ensureGuestSessionId } from "@/features/orders/guest-session";
 
 type PublicCafeMenuPageProps = {
   params: Promise<{ cafeSlug: string }>;
@@ -36,6 +37,7 @@ export default async function PublicCafeMenuPage({
 }: PublicCafeMenuPageProps) {
   const { cafeSlug } = await params;
   const { table: tableToken } = await searchParams;
+  await ensureGuestSessionId();
   const menu = await getPublicMenuBySlug(cafeSlug, tableToken);
 
   if (!menu) {
@@ -43,7 +45,7 @@ export default async function PublicCafeMenuPage({
   }
 
   return (
-    <PublicMenuView
+    <PublicMenuExperience
       cafe={menu.cafe}
       categories={menu.categories}
       items={menu.items}

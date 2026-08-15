@@ -78,25 +78,41 @@ export default async function CafeMenuPage({ params, searchParams }: MenuPagePro
             optional.
           </p>
         </div>
-        {cafe.status === "active" ? (
-          <Button asChild variant="outline" className="min-h-11">
-            <Link href={`/c/${cafe.slug}`} target="_blank" rel="noreferrer">
-              View public menu
-            </Link>
-          </Button>
-        ) : (
-          <p className="text-muted-foreground text-xs">
-            Activate the cafe in Settings to publish the public menu.
-          </p>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {manage ? (
+            <Button asChild variant="secondary" className="min-h-11">
+              <Link href={`/dashboard/cafes/${cafeId}/menu/import`}>Import menu</Link>
+            </Button>
+          ) : null}
+          {cafe.status === "active" ? (
+            <Button asChild variant="outline" className="min-h-11">
+              <Link href={`/c/${cafe.slug}`} target="_blank" rel="noreferrer">
+                View public menu
+              </Link>
+            </Button>
+          ) : (
+            <p className="text-muted-foreground text-xs">
+              Activate the cafe in Settings to publish the public menu.
+            </p>
+          )}
+        </div>
       </div>
 
       {isTrulyEmpty ? (
         <div className="space-y-6">
           <EmptyState
             title="Your menu is empty"
-            description="Start with a category like Coffee or Snacks, then add your first item."
+            description="Import an existing PDF or photo of your menu, or start with a category like Coffee or Snacks."
           />
+          {manage ? (
+            <div className="flex flex-wrap gap-2">
+              <Button asChild className="min-h-11">
+                <Link href={`/dashboard/cafes/${cafeId}/menu/import`}>
+                  Import your menu
+                </Link>
+              </Button>
+            </div>
+          ) : null}
           {manage ? (
             <CategoriesPanel
               cafeId={cafeId}

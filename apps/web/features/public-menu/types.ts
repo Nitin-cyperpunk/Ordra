@@ -14,6 +14,8 @@ export type PublicCafe = {
 /** Guest-facing table context from QR (no internal ids). */
 export type PublicTableContext = {
   code: string;
+  /** Opaque public_token from the QR query — for cart/order binding only. */
+  publicToken: string;
 };
 
 export type PublicMenuCategory = {

@@ -607,6 +607,27 @@ export async function uploadItemImageAction(
     return { error: "Use a PNG, JPEG, or WebP image." };
   }
 
+  const buffer = new Uint8Array(await file.arrayBuffer());
+  const detected =
+    buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47
+      ? "image/png"
+      : buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff
+        ? "image/jpeg"
+        : buffer[0] === 0x52 &&
+            buffer[1] === 0x49 &&
+            buffer[2] === 0x46 &&
+            buffer[3] === 0x46 &&
+            buffer[8] === 0x57 &&
+            buffer[9] === 0x45 &&
+            buffer[10] === 0x42 &&
+            buffer[11] === 0x50
+          ? "image/webp"
+          : null;
+
+  if (!detected || detected !== file.type) {
+    return { error: "Use a PNG, JPEG, or WebP image." };
+  }
+
   const supabase = await createClient();
   const { data: item, error: itemError } = await supabase
     .from("menu_items")
@@ -618,13 +639,13 @@ export async function uploadItemImageAction(
   if (itemError) return { error: mapMenuError(itemError) };
   if (!item) return { error: "Item not found or you do not have permission." };
 
-  const objectPath = menuItemImageObjectPath(cafeId, itemId, randomUUID(), file.type);
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const objectPath = menuItemImageObjectPath(cafeId, itemId, randomUUID(), detected);
+  const uploadBuffer = Buffer.from(buffer);
 
   const { error: uploadError } = await supabase.storage
     .from(CAFE_ASSETS_BUCKET)
-    .upload(objectPath, buffer, {
-      contentType: file.type,
+    .upload(objectPath, uploadBuffer, {
+      contentType: detected,
       upsert: false,
     });
 
