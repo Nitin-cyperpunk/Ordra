@@ -1,13 +1,13 @@
 import Link from "next/link";
 
 import { getCafeById } from "@/features/cafes/actions";
-import { requireCafeAccess } from "@/features/memberships/access";
-import { SyncActiveCafe } from "@/features/memberships/components/sync-active-cafe";
 import { listMenuCategories, listMenuItems } from "@/features/menu/actions";
 import { AddItemForm } from "@/features/menu/components/add-item-form";
 import { CategoriesPanel } from "@/features/menu/components/categories-panel";
 import { MenuFilters, MenuItemsList } from "@/features/menu/components/menu-items-list";
 import { canManageMenu, type MenuItemDiet } from "@/features/menu/types";
+import { requireCafeAccess } from "@/features/memberships/access";
+import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 
 type MenuPageProps = {
@@ -44,16 +44,20 @@ function parseDiet(value: string | undefined): "all" | MenuItemDiet {
 export default async function CafeMenuPage({ params, searchParams }: MenuPageProps) {
   const { cafeId } = await params;
   const filters = await searchParams;
-  const { cafe, role } = await requireCafeAccess(cafeId);
+  const { role } = await requireCafeAccess(cafeId);
+  const cafe = (await getCafeById(cafeId))!;
   const manage = canManageMenu(role);
 
   const q = filters.q?.trim() ?? "";
   const categoryId = filters.category?.trim() || "all";
   const availability = parseAvailability(filters.availability);
   const diet = parseDiet(filters.diet);
+  const hasFilters =
+    Boolean(q) || categoryId !== "all" || availability !== "all" || diet !== "all";
 
-  const [categories, items] = await Promise.all([
+  const [categories, allItems, items] = await Promise.all([
     listMenuCategories(cafeId),
+    listMenuItems(cafeId),
     listMenuItems(cafeId, {
       q: q || undefined,
       categoryId,
@@ -62,78 +66,102 @@ export default async function CafeMenuPage({ params, searchParams }: MenuPagePro
     }),
   ]);
 
-  return (
-    <main className="mx-auto max-w-5xl space-y-8">
-      <SyncActiveCafe cafeId={cafeId} />
+  const isTrulyEmpty = allItems.length === 0 && categories.length === 0;
 
-      <div className="space-y-2">
-        <p className="text-muted-foreground text-xs uppercase tracking-[0.2em]">
-          Cafe workspace · Menu
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">{cafe.name}</h1>
-        <p className="text-muted-foreground text-sm">
-          Manage categories, prices, availability, and item images. Customer-facing
-          digital menu and QR ordering come later.
-        </p>
-        <p className="text-muted-foreground text-sm">
-          Your role: <span className="text-foreground capitalize">{role}</span>
-          {" · "}
-          Currency: <span className="text-foreground">{cafe.currency ?? "INR"}</span>
-          {" · "}
-          {items.length} items shown
-        </p>
+  return (
+    <main className="space-y-8">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-semibold tracking-tight">Menu</h2>
+          <p className="text-muted-foreground text-sm">
+            Build what you sell — name, price, and category. Photos and extras are
+            optional.
+          </p>
+        </div>
+        {cafe.status === "active" ? (
+          <Button asChild variant="outline" className="min-h-11">
+            <Link href={`/c/${cafe.slug}`} target="_blank" rel="noreferrer">
+              View public menu
+            </Link>
+          </Button>
+        ) : (
+          <p className="text-muted-foreground text-xs">
+            Activate the cafe in Settings to publish the public menu.
+          </p>
+        )}
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <CategoriesPanel
-          cafeId={cafeId}
-          categories={categories}
-          canManage={manage}
-          activeCategoryId={categoryId}
-        />
-
+      {isTrulyEmpty ? (
         <div className="space-y-6">
-          <MenuFilters
-            cafeId={cafeId}
-            categoryId={categoryId}
-            q={q}
-            availability={availability}
-            diet={diet}
+          <EmptyState
+            title="Your menu is empty"
+            description="Start with a category like Coffee or Snacks, then add your first item."
           />
-
-          <MenuItemsList
-            cafeId={cafeId}
-            items={items}
-            categories={categories}
-            canManage={manage}
-            currency={cafe.currency ?? "INR"}
-          />
-
           {manage ? (
-            <AddItemForm
+            <CategoriesPanel
               cafeId={cafeId}
               categories={categories}
-              defaultCategoryId={categoryId}
+              canManage={manage}
+              activeCategoryId={categoryId}
             />
           ) : (
             <p className="text-muted-foreground text-sm">
-              Only owners and managers can edit the menu. You can still browse items.
+              Ask an owner or manager to set up the menu.
             </p>
           )}
         </div>
-      </div>
+      ) : (
+        <div className="grid gap-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
+          <CategoriesPanel
+            cafeId={cafeId}
+            categories={categories}
+            canManage={manage}
+            activeCategoryId={categoryId}
+          />
 
-      <div className="flex flex-wrap gap-2">
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/dashboard/cafes/${cafeId}`}>Cafe workspace</Link>
-        </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/dashboard/cafes/${cafeId}/tables`}>Tables</Link>
-        </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/dashboard">All cafes</Link>
-        </Button>
-      </div>
+          <div className="space-y-6">
+            {allItems.length > 0 ? (
+              <MenuFilters
+                cafeId={cafeId}
+                categoryId={categoryId}
+                q={q}
+                availability={availability}
+                diet={diet}
+              />
+            ) : null}
+
+            {allItems.length === 0 ? (
+              <EmptyState
+                title="No items yet"
+                description="Add your first item and start building your digital menu."
+              />
+            ) : (
+              <MenuItemsList
+                cafeId={cafeId}
+                items={items}
+                categories={categories}
+                canManage={manage}
+                currency={cafe.currency ?? "INR"}
+                filteredEmpty={hasFilters && items.length === 0}
+              />
+            )}
+
+            {manage ? (
+              <div id="add-item">
+                <AddItemForm
+                  cafeId={cafeId}
+                  categories={categories}
+                  defaultCategoryId={categoryId}
+                />
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm">
+                You can browse the menu. Only owners and managers can edit it.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }

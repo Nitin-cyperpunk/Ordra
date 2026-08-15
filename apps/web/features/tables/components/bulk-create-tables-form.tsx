@@ -105,7 +105,9 @@ export function BulkCreateTablesForm({ cafeId, sections }: BulkCreateTablesFormP
       </div>
 
       {state.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
-      {state.success ? <p className="text-sm text-emerald-700">{state.success}</p> : null}
+      {state.success ? (
+        <p className="text-success-foreground text-sm">{state.success}</p>
+      ) : null}
 
       <Button type="submit" disabled={pending} size="sm" variant="secondary">
         {pending ? "Creating…" : "Create tables"}

@@ -29,20 +29,12 @@ MIME: png/jpeg/webp · max 2 MiB. Writes: owner/manager via Storage RLS + `priva
 
 HEIC and CDN/image transforms are deferred.
 
-## Future public menu query (not implemented)
+## Public digital menu (Module 9 — first slice)
 
-```sql
--- conceptual
-select ...
-from menu_categories c
-join menu_items i on i.category_id = c.id
-where c.cafe_id = :cafe_id
-  and c.is_active
-  and i.is_available
-order by c.display_order, i.display_order;
-```
+Guest URL: `/c/{slug}` — see `docs/database/public-menu.md`.
 
-Public API will use a dedicated anon-safe surface later — do not open these tables to anon yet.
+Public SELECT RLS allows active cafe + active categories + available items only.
+Writes remain owner/manager.
 
 ## RBAC
 

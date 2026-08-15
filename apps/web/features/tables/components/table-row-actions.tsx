@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useId, useRef, useState } from "react";
-import { Pencil, X } from "lucide-react";
+import { Pencil, QrCode, X } from "lucide-react";
 
 import {
   deleteTableAction,
@@ -62,8 +63,20 @@ export function TableRowActions({
     }
   }, [updateState, statusState, deleteState]);
 
+  const qrHref = `/dashboard/cafes/${cafeId}/tables/${table.id}/qr`;
+
   if (!canManage) {
-    return <span className="text-muted-foreground text-xs">View only</span>;
+    return (
+      <div className="flex flex-wrap items-center justify-end gap-1">
+        <Button asChild size="sm" variant="outline">
+          <Link href={qrHref} aria-label={`QR for table ${table.code}`}>
+            <QrCode className="size-3.5" aria-hidden />
+            QR
+          </Link>
+        </Button>
+        <span className="text-muted-foreground text-xs">View only</span>
+      </div>
+    );
   }
 
   const pending = updatePending || statusPending || deletePending;
@@ -74,6 +87,13 @@ export function TableRowActions({
       {message && !dialogRef.current?.open ? (
         <span className="text-muted-foreground sr-only">{message}</span>
       ) : null}
+
+      <Button asChild size="sm" variant="outline">
+        <Link href={qrHref} aria-label={`QR for table ${table.code}`}>
+          <QrCode className="size-3.5" aria-hidden />
+          QR
+        </Link>
+      </Button>
 
       <form action={statusAction}>
         <input type="hidden" name="cafeId" value={cafeId} />
@@ -186,7 +206,7 @@ export function TableRowActions({
               <p className="text-destructive text-sm">{updateState.error}</p>
             ) : null}
             {updateState.success ? (
-              <p className="text-sm text-emerald-700">{updateState.success}</p>
+              <p className="text-success-foreground text-sm">{updateState.success}</p>
             ) : null}
 
             <Button type="submit" size="sm" disabled={pending}>

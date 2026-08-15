@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { createItemAction, type MenuActionState } from "@/features/menu/actions";
 import type { MenuCategory } from "@/features/menu/types";
@@ -19,72 +19,70 @@ type AddItemFormProps = {
 
 export function AddItemForm({ cafeId, categories, defaultCategoryId }: AddItemFormProps) {
   const [state, formAction, pending] = useActionState(createItemAction, initialState);
+  const [showMore, setShowMore] = useState(false);
   const activeCategories = categories.filter((category) => category.is_active);
 
   if (activeCategories.length === 0) {
     return (
-      <p className="text-muted-foreground rounded-lg border border-dashed p-4 text-sm">
-        Create an active category before adding menu items.
-      </p>
+      <div className="rounded-lg border border-dashed p-4 text-sm">
+        <p className="font-medium">Add a category first</p>
+        <p className="text-muted-foreground mt-1">
+          Create something like Coffee or Snacks on the left, then come back to add items.
+        </p>
+      </div>
     );
   }
 
   return (
-    <form action={formAction} className="space-y-4 rounded-lg border p-4">
+    <form action={formAction} className="space-y-4 rounded-xl border p-4 sm:p-5">
       <div>
-        <h3 className="text-sm font-medium">Add menu item</h3>
-        <p className="text-muted-foreground text-xs">
-          Price is stored as decimal currency (INR for now).
+        <h3 className="text-base font-semibold tracking-tight">
+          Add something delicious
+        </h3>
+        <p className="text-muted-foreground text-sm">
+          Name, price, and category are enough to start.
         </p>
       </div>
 
       <input type="hidden" name="cafeId" value={cafeId} />
+      <input type="hidden" name="isAvailable" value="true" />
+      {!showMore ? <input type="hidden" name="diet" value="vegetarian" /> : null}
+
+      <div className="space-y-2">
+        <Label htmlFor="item-name">Name</Label>
+        <Input
+          id="item-name"
+          name="name"
+          required
+          disabled={pending}
+          maxLength={120}
+          placeholder="Cappuccino"
+          className="min-h-11"
+          aria-invalid={Boolean(state.fieldErrors?.name)}
+        />
+        {state.fieldErrors?.name?.[0] ? (
+          <p className="text-destructive text-sm">{state.fieldErrors.name[0]}</p>
+        ) : null}
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="item-name">Item name</Label>
-          <Input
-            id="item-name"
-            name="name"
-            required
-            disabled={pending}
-            maxLength={120}
-            aria-invalid={Boolean(state.fieldErrors?.name)}
-          />
-          {state.fieldErrors?.name?.[0] ? (
-            <p className="text-destructive text-sm">{state.fieldErrors.name[0]}</p>
-          ) : null}
-        </div>
-
         <div className="space-y-2">
           <Label htmlFor="item-price">Price (₹)</Label>
           <Input
             id="item-price"
             name="price"
             inputMode="decimal"
-            placeholder="149.50"
+            placeholder="149"
             required
             disabled={pending}
+            className="min-h-11"
             aria-invalid={Boolean(state.fieldErrors?.price)}
           />
           {state.fieldErrors?.price?.[0] ? (
             <p className="text-destructive text-sm">{state.fieldErrors.price[0]}</p>
           ) : null}
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="item-description">Description</Label>
-        <Textarea
-          id="item-description"
-          name="description"
-          rows={2}
-          disabled={pending}
-          maxLength={2000}
-        />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor="item-category">Category</Label>
           <select
@@ -97,7 +95,7 @@ export function AddItemForm({ cafeId, categories, defaultCategoryId }: AddItemFo
                 ? defaultCategoryId
                 : activeCategories[0]?.id
             }
-            className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm"
+            className="border-input bg-background flex min-h-11 w-full rounded-md border px-3 py-2 text-sm shadow-sm"
           >
             {activeCategories.map((category) => (
               <option key={category.id} value={category.id}>
@@ -105,45 +103,59 @@ export function AddItemForm({ cafeId, categories, defaultCategoryId }: AddItemFo
               </option>
             ))}
           </select>
-          {state.fieldErrors?.categoryId?.[0] ? (
-            <p className="text-destructive text-sm">{state.fieldErrors.categoryId[0]}</p>
-          ) : null}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="item-diet">Diet</Label>
-          <select
-            id="item-diet"
-            name="diet"
-            disabled={pending}
-            defaultValue="vegetarian"
-            className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm"
-          >
-            <option value="vegetarian">Vegetarian</option>
-            <option value="non_vegetarian">Non-vegetarian</option>
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="item-available">Availability</Label>
-          <select
-            id="item-available"
-            name="isAvailable"
-            disabled={pending}
-            defaultValue="true"
-            className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-sm"
-          >
-            <option value="true">Available</option>
-            <option value="false">Unavailable</option>
-          </select>
         </div>
       </div>
 
-      {state.error ? <p className="text-destructive text-sm">{state.error}</p> : null}
-      {state.success ? <p className="text-sm text-emerald-700">{state.success}</p> : null}
+      <button
+        type="button"
+        className="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline"
+        onClick={() => setShowMore((value) => !value)}
+      >
+        {showMore ? "Hide extra options" : "More options"}
+      </button>
 
-      <Button type="submit" size="sm" disabled={pending}>
-        {pending ? "Adding…" : "Add item"}
+      {showMore ? (
+        <div className="space-y-4 border-t pt-4">
+          <div className="space-y-2">
+            <Label htmlFor="item-description">Description</Label>
+            <Textarea
+              id="item-description"
+              name="description"
+              rows={2}
+              disabled={pending}
+              maxLength={2000}
+              placeholder="Optional — what makes it special?"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="item-diet">Vegetarian?</Label>
+            <select
+              id="item-diet"
+              name="diet"
+              disabled={pending}
+              defaultValue="vegetarian"
+              className="border-input bg-background flex min-h-11 w-full rounded-md border px-3 py-2 text-sm shadow-sm"
+            >
+              <option value="vegetarian">Yes — vegetarian</option>
+              <option value="non_vegetarian">No — non-vegetarian</option>
+            </select>
+          </div>
+        </div>
+      ) : null}
+
+      {state.error ? (
+        <p className="text-destructive text-sm" role="alert">
+          {state.error}
+        </p>
+      ) : null}
+      {state.success ? (
+        <p className="text-success-foreground text-sm" role="status">
+          {state.success}
+        </p>
+      ) : null}
+
+      <Button type="submit" disabled={pending} className="min-h-11 w-full sm:w-auto">
+        {pending ? "Saving…" : "Add to menu"}
       </Button>
     </form>
   );

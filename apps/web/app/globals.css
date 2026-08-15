@@ -24,6 +24,11 @@
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
     --radius: 0.5rem;
+    --success: 152 60% 36%;
+    --success-foreground: 152 60% 28%;
+    --warning: 38 92% 40%;
+    --warning-foreground: 32 80% 22%;
+    --warning-muted: 40 90% 96%;
 
     /* Ordra brand accents (Coming Soon / marketing surfaces) */
     --ordra-orange: 28 95% 55%;
@@ -31,6 +36,39 @@
     --ordra-pink: 330 75% 62%;
     --ordra-purple: 262 70% 58%;
     --ordra-blue: 217 85% 60%;
+  }
+
+  .dark {
+    --background: 240 6% 6%;
+    --foreground: 0 0% 98%;
+    --card: 240 5% 9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 5% 9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 240 4% 14%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 4% 14%;
+    --muted-foreground: 240 5% 64%;
+    --accent: 240 4% 14%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 4% 18%;
+    --input: 240 4% 18%;
+    --ring: 240 5% 84%;
+    --success: 152 55% 42%;
+    --success-foreground: 152 70% 72%;
+    --warning: 38 90% 55%;
+    --warning-foreground: 40 95% 85%;
+    --warning-muted: 38 40% 14%;
+
+    --ordra-orange: 28 95% 58%;
+    --ordra-gold: 38 90% 60%;
+    --ordra-pink: 330 75% 65%;
+    --ordra-purple: 262 70% 62%;
+    --ordra-blue: 217 85% 64%;
   }
 
   * {
@@ -52,6 +90,100 @@
       hsl(var(--ordra-blue)) 100%
     );
   }
+
+  /**
+   * Printable QR card — always light, printer-friendly.
+   * Screen preview mirrors print (WYSIWYG).
+   */
+  .qr-print-card {
+    --qr-card-bg: #ffffff;
+    --qr-card-fg: #111111;
+    --qr-card-muted: #5c5c5c;
+    --qr-card-border: #e8e8e8;
+    --qr-card-rule: #efefef;
+
+    width: 100%;
+    max-width: 22rem;
+    margin-inline: auto;
+    background: var(--qr-card-bg);
+    color: var(--qr-card-fg);
+    border: 1px solid var(--qr-card-border);
+    border-radius: 1rem;
+    padding: 1.75rem 1.5rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  }
+
+  .qr-print-card__logo {
+    width: 3.25rem;
+    height: 3.25rem;
+    margin-inline: auto;
+    border-radius: 9999px;
+    object-fit: cover;
+    background: #f4f4f4;
+  }
+
+  .qr-print-card__logo--mark {
+    border-radius: 0.65rem;
+    object-fit: contain;
+  }
+
+  .qr-print-card__cafe {
+    margin-top: 0.85rem;
+    font-size: 1.15rem;
+    font-weight: 650;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.25;
+  }
+
+  .qr-print-card__table {
+    margin-top: 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .qr-print-card__qr {
+    margin: 1.25rem auto 0;
+    width: 13.5rem;
+    height: 13.5rem;
+    padding: 0.65rem;
+    background: #ffffff;
+    border: 1px solid var(--qr-card-rule);
+    border-radius: 0.75rem;
+  }
+
+  .qr-print-card__qr img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .qr-print-card__instruction {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--qr-card-muted);
+    letter-spacing: 0.01em;
+  }
+
+  .qr-print-card__tagline {
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+    color: var(--qr-card-muted);
+    line-height: 1.4;
+  }
+
+  .qr-print-card__footer {
+    margin-top: 1.15rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--qr-card-rule);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a8a8a;
+  }
 }
 
 @layer utilities {
@@ -62,5 +194,55 @@
     to {
       transform: scale(1.06);
     }
+  }
+}
+
+/* Print: hide chrome; force light tokens; single card page */
+@media print {
+  @page {
+    margin: 10mm;
+    size: auto;
+  }
+
+  :root,
+  html.dark,
+  .dark {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --border: 0 0% 89.8%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    color-scheme: light !important;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  body * {
+    box-shadow: none !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .qr-print-card {
+    max-width: 95mm;
+    border-radius: 0;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .qr-print-card__qr {
+    width: 58mm;
+    height: 58mm;
   }
 }

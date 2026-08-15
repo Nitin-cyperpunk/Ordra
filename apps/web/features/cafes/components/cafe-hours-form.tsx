@@ -100,7 +100,7 @@ export function CafeHoursForm({ cafe }: CafeHoursFormProps) {
         </p>
       ) : null}
       {state.success ? (
-        <p className="text-sm text-emerald-700" role="status">
+        <p className="text-success-foreground text-sm" role="status">
           {state.success}
         </p>
       ) : null}

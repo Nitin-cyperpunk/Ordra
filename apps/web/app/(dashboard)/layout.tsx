@@ -6,6 +6,7 @@ import { resolveActiveCafe } from "@/features/memberships/active-cafe";
 import { getMyCafeMemberships } from "@/features/memberships/actions";
 import { CafeSwitcher } from "@/features/memberships/components/cafe-switcher";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -25,18 +26,21 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   return (
     <div className="min-h-screen">
-      <header className="flex items-center justify-between gap-4 border-b px-6 py-4">
+      <header className="flex items-center justify-between gap-4 border-b px-6 py-4 print:hidden">
         <div className="flex min-w-0 items-center gap-4">
           <p className="text-sm font-medium tracking-wide">Ordra</p>
           <CafeSwitcher memberships={memberships} activeCafeId={activeCafeId} />
         </div>
-        <form action={logoutAction}>
-          <Button type="submit" variant="outline" size="sm">
-            Sign out
-          </Button>
-        </form>
+        <div className="flex shrink-0 items-center gap-2">
+          <ThemeToggle />
+          <form action={logoutAction}>
+            <Button type="submit" variant="outline" size="sm">
+              Sign out
+            </Button>
+          </form>
+        </div>
       </header>
-      <div className="px-6 py-10">{children}</div>
+      <div className="px-6 py-10 print:px-0 print:py-0">{children}</div>
     </div>
   );
 }

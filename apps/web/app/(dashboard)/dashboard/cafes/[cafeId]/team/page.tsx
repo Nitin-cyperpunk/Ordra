@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { getCafeById } from "@/features/cafes/actions";
 import { requireCafeAccess } from "@/features/memberships/access";
 import {
@@ -10,7 +8,7 @@ import { InviteMemberForm } from "@/features/memberships/components/invite-membe
 import { MemberRow } from "@/features/memberships/components/member-row";
 import { PendingCafeInvites } from "@/features/memberships/components/pending-cafe-invites";
 import { canManageMembers } from "@/features/memberships/types";
-import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/empty-state";
 
 type TeamPageProps = {
   params: Promise<{ cafeId: string }>;
@@ -19,32 +17,42 @@ type TeamPageProps = {
 export async function generateMetadata({ params }: TeamPageProps) {
   const { cafeId } = await params;
   const cafe = await getCafeById(cafeId);
-  return { title: cafe ? `Team · ${cafe.name}` : "Team · Ordra" };
+  return {
+    title: cafe ? `Team · ${cafe.name}` : "Team · Ordra",
+    robots: { index: false, follow: false },
+  };
 }
 
 export default async function CafeTeamPage({ params }: TeamPageProps) {
   const { cafeId } = await params;
-  const { cafe, role, user } = await requireCafeAccess(cafeId);
+  const { role, user } = await requireCafeAccess(cafeId);
+  const manage = canManageMembers(role);
 
   const [members, invitations] = await Promise.all([
     getCafeMemberships(cafeId),
-    canManageMembers(role) ? getPendingInvitations(cafeId) : Promise.resolve([]),
+    manage ? getPendingInvitations(cafeId) : Promise.resolve([]),
   ]);
+
+  const solo = members.length <= 1;
 
   return (
     <main className="mx-auto max-w-lg space-y-8">
       <div className="space-y-2">
-        <p className="text-muted-foreground text-xs uppercase tracking-[0.2em]">
-          Cafe settings · Team
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">{cafe.name}</h1>
+        <h2 className="text-2xl font-semibold tracking-tight">Team</h2>
         <p className="text-muted-foreground text-sm">
-          Your role: <span className="text-foreground capitalize">{role}</span>
+          Invite managers and staff when you’re ready. You can run things solo until then.
         </p>
       </div>
 
+      {solo && manage ? (
+        <EmptyState
+          title="You’re running this cafe solo for now"
+          description="Invite your team when you’re ready — managers can help with menu and tables, staff can view day-to-day info."
+        />
+      ) : null}
+
       <section className="space-y-3">
-        <h2 className="text-lg font-medium">Members</h2>
+        <h3 className="text-lg font-medium">People</h3>
         <ul className="space-y-2">
           {members.map((membership) => (
             <MemberRow
@@ -58,11 +66,11 @@ export default async function CafeTeamPage({ params }: TeamPageProps) {
         </ul>
       </section>
 
-      {canManageMembers(role) ? (
+      {manage ? (
         <>
           <InviteMemberForm cafeId={cafeId} actorRole={role} />
           <section className="space-y-3">
-            <h2 className="text-lg font-medium">Pending invites</h2>
+            <h3 className="text-lg font-medium">Pending invites</h3>
             <PendingCafeInvites cafeId={cafeId} invitations={invitations} />
           </section>
         </>
@@ -71,15 +79,6 @@ export default async function CafeTeamPage({ params }: TeamPageProps) {
           Only owners and managers can invite or change team members.
         </p>
       )}
-
-      <div className="flex gap-2">
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/dashboard/cafes/${cafeId}/settings/profile`}>Cafe settings</Link>
-        </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/dashboard">All cafes</Link>
-        </Button>
-      </div>
     </main>
   );
 }

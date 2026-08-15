@@ -84,7 +84,7 @@ export function SectionsPanel({ cafeId, sections, canManage }: SectionsPanelProp
         <p className="text-destructive text-sm">{deleteState.error}</p>
       ) : null}
       {deleteState.success ? (
-        <p className="text-sm text-emerald-700">{deleteState.success}</p>
+        <p className="text-success-foreground text-sm">{deleteState.success}</p>
       ) : null}
 
       {canManage ? (
@@ -114,7 +114,7 @@ export function SectionsPanel({ cafeId, sections, canManage }: SectionsPanelProp
         <p className="text-destructive text-sm">{createState.error}</p>
       ) : null}
       {createState.success ? (
-        <p className="text-sm text-emerald-700">{createState.success}</p>
+        <p className="text-success-foreground text-sm">{createState.success}</p>
       ) : null}
       {createState.fieldErrors?.name?.[0] ? (
         <p className="text-destructive text-sm">{createState.fieldErrors.name[0]}</p>
