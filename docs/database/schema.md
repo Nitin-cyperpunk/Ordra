@@ -77,6 +77,13 @@ Migration: `20260815190000_harden_public_cafe_data_exposure.sql`.
 
 See `docs/database/public-menu.md`. Cart / orders deferred; table QR context is Module 10.
 
+## Implemented: customer orders (Module 11)
+
+Tables: `orders`, `order_items`, `cafe_order_counters`. Guest place/track via RPCs +
+httpOnly session cookie. Staff dashboard + status machine. No payments/invoices.
+
+See `docs/database/orders.md`. Migration `20260815220000_create_orders_and_order_items.sql`.
+
 ## Migrations
 
 SQL migrations live in `supabase/migrations/` and are applied via Supabase CLI.

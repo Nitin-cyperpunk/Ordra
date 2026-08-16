@@ -65,12 +65,14 @@ describe("public table QR context contract", () => {
     assert.equal(PUBLIC_TABLE_COLUMNS, "cafe_id, code, public_token, status");
   });
 
-  it("guest table context only includes display code", () => {
-    const sample: PublicTableContext = { code: "12" };
+  it("guest table context includes display code + opaque token only", () => {
+    const sample: PublicTableContext = {
+      code: "12",
+      publicToken: "abc123opaque",
+    };
     for (const field of PRIVATE_TABLE_FIELDS) {
       assert.equal(Object.prototype.hasOwnProperty.call(sample, field), false);
     }
-    assert.equal(Object.prototype.hasOwnProperty.call(sample, "public_token"), false);
     assert.equal(Object.prototype.hasOwnProperty.call(sample, "cafe_id"), false);
   });
 

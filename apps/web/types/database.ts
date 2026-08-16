@@ -331,6 +331,7 @@ export type Database = {
           is_available: boolean;
           name: string;
           price: number;
+          source_import_id: string | null;
           updated_at: string;
         };
         Insert: {
@@ -345,6 +346,7 @@ export type Database = {
           is_available?: boolean;
           name: string;
           price: number;
+          source_import_id?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -359,6 +361,7 @@ export type Database = {
           is_available?: boolean;
           name?: string;
           price?: number;
+          source_import_id?: string | null;
           updated_at?: string;
         };
         Relationships: [
@@ -374,6 +377,78 @@ export type Database = {
             columns: ["category_id"];
             isOneToOne: false;
             referencedRelation: "menu_categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "menu_items_source_import_id_fkey";
+            columns: ["source_import_id"];
+            isOneToOne: false;
+            referencedRelation: "menu_imports";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      menu_imports: {
+        Row: {
+          approved_at: string | null;
+          approved_by: string | null;
+          cafe_id: string;
+          completed_at: string | null;
+          created_at: string;
+          created_by: string;
+          error_code: string | null;
+          extracted_payload: Json | null;
+          id: string;
+          provider: string | null;
+          source_file_name: string;
+          source_file_path: string;
+          source_file_size: number;
+          source_mime: string;
+          status: Database["public"]["Enums"]["menu_import_status"];
+          updated_at: string;
+        };
+        Insert: {
+          approved_at?: string | null;
+          approved_by?: string | null;
+          cafe_id: string;
+          completed_at?: string | null;
+          created_at?: string;
+          created_by: string;
+          error_code?: string | null;
+          extracted_payload?: Json | null;
+          id?: string;
+          provider?: string | null;
+          source_file_name: string;
+          source_file_path: string;
+          source_file_size: number;
+          source_mime: string;
+          status?: Database["public"]["Enums"]["menu_import_status"];
+          updated_at?: string;
+        };
+        Update: {
+          approved_at?: string | null;
+          approved_by?: string | null;
+          cafe_id?: string;
+          completed_at?: string | null;
+          created_at?: string;
+          created_by?: string;
+          error_code?: string | null;
+          extracted_payload?: Json | null;
+          id?: string;
+          provider?: string | null;
+          source_file_name?: string;
+          source_file_path?: string;
+          source_file_size?: number;
+          source_mime?: string;
+          status?: Database["public"]["Enums"]["menu_import_status"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "menu_imports_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: false;
+            referencedRelation: "cafes";
             referencedColumns: ["id"];
           },
         ];
@@ -413,6 +488,135 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      orders: {
+        Row: {
+          cafe_id: string;
+          completed_at: string | null;
+          confirmed_at: string | null;
+          created_at: string;
+          customer_session_id: string;
+          id: string;
+          idempotency_key: string;
+          notes: string | null;
+          order_number: number;
+          preparing_at: string | null;
+          public_token: string;
+          ready_at: string | null;
+          rejected_at: string | null;
+          status: Database["public"]["Enums"]["order_status"];
+          subtotal: number;
+          table_id: string;
+          total: number;
+          updated_at: string;
+        };
+        Insert: {
+          cafe_id: string;
+          completed_at?: string | null;
+          confirmed_at?: string | null;
+          created_at?: string;
+          customer_session_id: string;
+          id?: string;
+          idempotency_key: string;
+          notes?: string | null;
+          order_number: number;
+          preparing_at?: string | null;
+          public_token?: string;
+          ready_at?: string | null;
+          rejected_at?: string | null;
+          status?: Database["public"]["Enums"]["order_status"];
+          subtotal: number;
+          table_id: string;
+          total: number;
+          updated_at?: string;
+        };
+        Update: {
+          cafe_id?: string;
+          completed_at?: string | null;
+          confirmed_at?: string | null;
+          created_at?: string;
+          customer_session_id?: string;
+          id?: string;
+          idempotency_key?: string;
+          notes?: string | null;
+          order_number?: number;
+          preparing_at?: string | null;
+          public_token?: string;
+          ready_at?: string | null;
+          rejected_at?: string | null;
+          status?: Database["public"]["Enums"]["order_status"];
+          subtotal?: number;
+          table_id?: string;
+          total?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "orders_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: false;
+            referencedRelation: "cafes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "orders_table_id_fkey";
+            columns: ["table_id"];
+            isOneToOne: false;
+            referencedRelation: "cafe_tables";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      order_items: {
+        Row: {
+          created_at: string;
+          id: string;
+          item_name_snapshot: string;
+          item_price_snapshot: number;
+          line_total: number;
+          menu_item_id: string | null;
+          notes: string | null;
+          order_id: string;
+          quantity: number;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          item_name_snapshot: string;
+          item_price_snapshot: number;
+          line_total: number;
+          menu_item_id?: string | null;
+          notes?: string | null;
+          order_id: string;
+          quantity: number;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          item_name_snapshot?: string;
+          item_price_snapshot?: number;
+          line_total?: number;
+          menu_item_id?: string | null;
+          notes?: string | null;
+          order_id?: string;
+          quantity?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_items_menu_item_id_fkey";
+            columns: ["menu_item_id"];
+            isOneToOne: false;
+            referencedRelation: "menu_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {
@@ -459,6 +663,36 @@ export type Database = {
         Args: { p_cafe_id: string };
         Returns: Database["public"]["Enums"]["cafe_role"];
       };
+      place_customer_order: {
+        Args: {
+          p_cafe_slug: string;
+          p_customer_session_id: string;
+          p_idempotency_key: string;
+          p_items: Json;
+          p_notes: string | null;
+          p_table_token: string;
+        };
+        Returns: Json;
+      };
+      get_customer_order: {
+        Args: { p_customer_session_id: string; p_public_token: string };
+        Returns: Json;
+      };
+      transition_order_status: {
+        Args: {
+          p_next: Database["public"]["Enums"]["order_status"];
+          p_order_id: string;
+        };
+        Returns: Database["public"]["Tables"]["orders"]["Row"];
+      };
+      commit_menu_import: {
+        Args: {
+          p_cafe_id: string;
+          p_draft: Json;
+          p_import_id: string;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       cafe_invite_status: "pending" | "accepted" | "revoked";
@@ -466,6 +700,9 @@ export type Database = {
       cafe_status: "active" | "inactive";
       cafe_table_status: "active" | "inactive";
       menu_item_diet: "vegetarian" | "non_vegetarian";
+      menu_import_status: "uploaded" | "processing" | "review" | "completed" | "failed";
+      order_status:
+        "pending" | "confirmed" | "preparing" | "ready" | "completed" | "rejected";
       waitlist_status: "pending" | "contacted" | "archived";
     };
     CompositeTypes: {
@@ -598,6 +835,7 @@ export const Constants = {
       cafe_status: ["active", "inactive"],
       cafe_table_status: ["active", "inactive"],
       menu_item_diet: ["vegetarian", "non_vegetarian"],
+      menu_import_status: ["uploaded", "processing", "review", "completed", "failed"],
       waitlist_status: ["pending", "contacted", "archived"],
     },
   },

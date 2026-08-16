@@ -6,6 +6,8 @@ import type {
   PublicMenuItem,
   PublicTableContext,
 } from "@/features/public-menu/types";
+import { CartBar } from "@/features/orders/components/cart-bar";
+import { MenuItemOrderControls } from "@/features/orders/components/menu-item-order-controls";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getSupabaseUrl } from "@/lib/supabase/env";
 import { cn } from "@/lib/utils";
@@ -34,6 +36,7 @@ export function PublicMenuView({
   table = null,
   tableUnavailable = false,
 }: PublicMenuViewProps) {
+  const orderingEnabled = Boolean(table?.publicToken);
   const itemsByCategory = new Map<string, PublicMenuItem[]>();
   for (const item of items) {
     const list = itemsByCategory.get(item.category_id) ?? [];
@@ -46,7 +49,12 @@ export function PublicMenuView({
   );
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-lg px-4 pb-16 pt-8 sm:px-6">
+    <div
+      className={cn(
+        "mx-auto min-h-screen w-full max-w-lg px-4 pt-8 sm:px-6",
+        orderingEnabled ? "pb-28" : "pb-16",
+      )}
+    >
       <header className="space-y-3 border-b pb-6">
         <p className="text-muted-foreground text-xs font-medium uppercase tracking-[0.2em]">
           Menu
@@ -60,7 +68,11 @@ export function PublicMenuView({
           <p className="text-muted-foreground text-sm" aria-live="polite">
             Table information unavailable.
           </p>
-        ) : null}
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            Browse the menu. Scan a table QR to place an order.
+          </p>
+        )}
         {cafe.city ? <p className="text-muted-foreground text-sm">{cafe.city}</p> : null}
         {cafe.description ? (
           <p className="text-muted-foreground whitespace-pre-wrap text-sm leading-relaxed">
@@ -114,6 +126,7 @@ export function PublicMenuView({
                       key={item.id}
                       item={item}
                       currency={cafe.currency}
+                      orderingEnabled={orderingEnabled}
                     />
                   ))}
                 </ul>
@@ -127,6 +140,8 @@ export function PublicMenuView({
         <ThemeToggle />
         <p>Powered by Ordra</p>
       </footer>
+
+      <CartBar />
     </div>
   );
 }
@@ -134,9 +149,11 @@ export function PublicMenuView({
 function PublicMenuItemCard({
   item,
   currency,
+  orderingEnabled,
 }: {
   item: PublicMenuItem;
   currency: string;
+  orderingEnabled: boolean;
 }) {
   const imageUrl = itemImageUrl(item.image_path);
 
@@ -156,7 +173,7 @@ function PublicMenuItemCard({
         )}
       </div>
 
-      <div className="min-w-0 flex-1 space-y-1">
+      <div className="min-w-0 flex-1 space-y-2">
         <div className="flex items-start justify-between gap-3">
           <h3 className="font-medium leading-snug">{item.name}</h3>
           <p className="shrink-0 text-sm font-semibold tabular-nums">
@@ -168,7 +185,14 @@ function PublicMenuItemCard({
             {item.description}
           </p>
         ) : null}
-        <p className="text-muted-foreground text-xs">{dietLabel(item.diet)}</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-muted-foreground text-xs">{dietLabel(item.diet)}</p>
+          <MenuItemOrderControls
+            item={item}
+            currency={currency}
+            orderingEnabled={orderingEnabled}
+          />
+        </div>
       </div>
     </li>
   );

@@ -1,9 +1,7 @@
-import Link from "next/link";
-
 import { getCafeById } from "@/features/cafes/actions";
 import { requireCafeAccess } from "@/features/memberships/access";
-import { EmptyState } from "@/components/empty-state";
-import { Button } from "@/components/ui/button";
+import { listCafeOrders } from "@/features/orders/actions";
+import { CafeOrdersBoard } from "@/features/orders/components/cafe-orders-board";
 
 type OrdersPageProps = {
   params: Promise<{ cafeId: string }>;
@@ -21,29 +19,22 @@ export async function generateMetadata({ params }: OrdersPageProps) {
 export default async function CafeOrdersPage({ params }: OrdersPageProps) {
   const { cafeId } = await params;
   await requireCafeAccess(cafeId);
+  const [cafe, orders] = await Promise.all([getCafeById(cafeId), listCafeOrders(cafeId)]);
 
   return (
     <main className="space-y-6">
       <div className="space-y-1">
         <h2 className="text-2xl font-semibold tracking-tight">Orders</h2>
         <p className="text-muted-foreground text-sm">
-          Live order taking arrives in a future update. For now, keep your menu and tables
-          ready.
+          Incoming table orders. Confirm, prepare, and mark ready as you go.
         </p>
       </div>
 
-      <EmptyState
-        title="Orders are coming soon"
-        description="When orders launch, you’ll see today’s tickets here. Get your menu and tables set up so you’re ready."
-        actionLabel="Go to menu"
-        actionHref={`/dashboard/cafes/${cafeId}/menu`}
-        secondaryLabel="Manage tables"
-        secondaryHref={`/dashboard/cafes/${cafeId}/tables`}
+      <CafeOrdersBoard
+        cafeId={cafeId}
+        currency={cafe?.currency ?? "INR"}
+        orders={orders}
       />
-
-      <Button asChild variant="outline" className="min-h-11">
-        <Link href={`/dashboard/cafes/${cafeId}`}>Back to home</Link>
-      </Button>
     </main>
   );
 }

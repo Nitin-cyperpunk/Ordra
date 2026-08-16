@@ -88,7 +88,10 @@ export async function resolvePublicTableContext(
   }
 
   return {
-    table: { code: String((data as Record<string, unknown>).code) },
+    table: {
+      code: String((data as Record<string, unknown>).code),
+      publicToken: token,
+    },
     tableUnavailable: false,
   };
 }

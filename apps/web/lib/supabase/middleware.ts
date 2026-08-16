@@ -1,6 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
+const GUEST_SESSION_COOKIE = "ordra_guest_session";
+const GUEST_SESSION_MAX_AGE = 60 * 60 * 24 * 30;
+
 function isAuthPath(pathname: string): boolean {
   return pathname === "/login" || pathname === "/signup";
 }
@@ -12,6 +15,36 @@ function isProtectedPath(pathname: string): boolean {
     pathname === "/onboarding" ||
     pathname.startsWith("/onboarding/")
   );
+}
+
+function needsGuestSession(pathname: string): boolean {
+  return pathname.startsWith("/c/") || pathname.startsWith("/order/");
+}
+
+function ensureGuestSessionCookie(
+  request: NextRequest,
+  response: NextResponse,
+): NextResponse {
+  if (!needsGuestSession(request.nextUrl.pathname)) {
+    return response;
+  }
+
+  const existing = request.cookies.get(GUEST_SESSION_COOKIE)?.value;
+  if (existing && existing.length >= 32) {
+    return response;
+  }
+
+  const id =
+    crypto.randomUUID().replace(/-/g, "") +
+    crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+  response.cookies.set(GUEST_SESSION_COOKIE, id, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: GUEST_SESSION_MAX_AGE,
+  });
+  return response;
 }
 
 /**
@@ -32,7 +65,7 @@ export async function updateSession(request: NextRequest) {
       loginUrl.searchParams.set("next", request.nextUrl.pathname);
       return NextResponse.redirect(loginUrl);
     }
-    return NextResponse.next({ request });
+    return ensureGuestSessionCookie(request, NextResponse.next({ request }));
   }
 
   let supabaseResponse = NextResponse.next({ request });
@@ -80,5 +113,5 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(dashboardUrl);
   }
 
-  return supabaseResponse;
+  return ensureGuestSessionCookie(request, supabaseResponse);
 }
