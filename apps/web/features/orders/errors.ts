@@ -27,11 +27,18 @@ export function mapOrderError(error: unknown): string {
   if (message.includes("ORDER_INVALID_TRANSITION")) {
     return "That status change isn’t allowed.";
   }
+  if (message.includes("ORDER_BAD_NOTE")) {
+    return "Please keep the reason under 250 characters.";
+  }
   if (message.includes("ORDER_FORBIDDEN") || message.includes("ORDER_NOT_FOUND")) {
     return "You don’t have access to this order.";
   }
   if (message.includes("ORDER_IDEMPOTENCY_CONFLICT")) {
     return "Couldn't place your order. Please try again.";
+  }
+
+  if (message.includes("ORDER_")) {
+    return "Couldn't update this order. Please try again.";
   }
 
   return "Couldn't place your order. Please try again.";

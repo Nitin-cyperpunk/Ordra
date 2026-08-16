@@ -3,14 +3,19 @@ import { notFound } from "next/navigation";
 
 import { getCafeById } from "@/features/cafes/actions";
 import { requireCafeAccess } from "@/features/memberships/access";
-import { getCafeOrderDetail, transitionOrderAction } from "@/features/orders/actions";
+import {
+  getCafeOrderDetail,
+  getOrderStatusHistory,
+  transitionOrderAction,
+} from "@/features/orders/actions";
+import { OrderDetailActions } from "@/features/orders/components/order-detail-actions";
+import { OrderStatusTimeline } from "@/features/orders/components/order-status-timeline";
 import {
   formatOrderNumber,
   nextOrderActions,
-  ORDER_STATUS_LABELS,
+  ORDER_OPS_LABELS,
 } from "@/features/orders/types";
 import { formatMenuPrice } from "@/features/menu/types";
-import { OrderDetailActions } from "@/features/orders/components/order-detail-actions";
 
 type OrderDetailPageProps = {
   params: Promise<{ cafeId: string; orderId: string }>;
@@ -30,9 +35,10 @@ export async function generateMetadata({ params }: OrderDetailPageProps) {
 export default async function CafeOrderDetailPage({ params }: OrderDetailPageProps) {
   const { cafeId, orderId } = await params;
   await requireCafeAccess(cafeId);
-  const [cafe, detail] = await Promise.all([
+  const [cafe, detail, history] = await Promise.all([
     getCafeById(cafeId),
     getCafeOrderDetail(cafeId, orderId),
+    getOrderStatusHistory(cafeId, orderId),
   ]);
 
   if (!detail) notFound();
@@ -56,10 +62,10 @@ export default async function CafeOrderDetailPage({ params }: OrderDetailPagePro
           {formatOrderNumber(order.order_number)}
         </h2>
         <p className="text-muted-foreground text-sm">
-          Table {order.table_code ?? "—"} · {ORDER_STATUS_LABELS[order.status]}
+          Table {order.table_code ?? "—"} · {ORDER_OPS_LABELS[order.status]}
         </p>
         <p className="text-muted-foreground text-xs">
-          {new Date(order.created_at).toLocaleString()}
+          Placed {new Date(order.created_at).toLocaleString()}
         </p>
       </div>
 
@@ -67,7 +73,7 @@ export default async function CafeOrderDetailPage({ params }: OrderDetailPagePro
         {items.map((item) => (
           <li key={item.id} className="flex justify-between gap-3 text-sm">
             <span>
-              {item.item_name_snapshot} × {item.quantity}
+              {item.quantity} × {item.item_name_snapshot}
             </span>
             <span className="tabular-nums">
               {formatMenuPrice(item.line_total, currency)}
@@ -77,8 +83,14 @@ export default async function CafeOrderDetailPage({ params }: OrderDetailPagePro
       </ul>
 
       {order.notes ? (
-        <p className="text-sm">
+        <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-sm">
           <span className="font-medium">Note:</span> {order.notes}
+        </p>
+      ) : null}
+
+      {order.rejection_reason ? (
+        <p className="text-sm">
+          <span className="font-medium">Cancel reason:</span> {order.rejection_reason}
         </p>
       ) : null}
 
@@ -93,6 +105,11 @@ export default async function CafeOrderDetailPage({ params }: OrderDetailPagePro
         actions={actions}
         action={transitionOrderAction}
       />
+
+      <section className="space-y-3">
+        <h3 className="text-sm font-semibold uppercase tracking-wide">Timeline</h3>
+        <OrderStatusTimeline entries={history} />
+      </section>
     </main>
   );
 }

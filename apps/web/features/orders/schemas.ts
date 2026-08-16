@@ -29,4 +29,10 @@ export const transitionOrderSchema = z.object({
   cafeId: z.string().uuid(),
   orderId: z.string().uuid(),
   status: z.enum(ORDER_STATUSES),
+  note: z
+    .string()
+    .trim()
+    .max(250)
+    .optional()
+    .transform((value) => (value ? value : undefined)),
 });

@@ -11,7 +11,7 @@ export function GuestOrderRefresh({ enabled }: { enabled: boolean }) {
     if (!enabled) return;
     const id = window.setInterval(() => {
       router.refresh();
-    }, 8000);
+    }, 4000);
     return () => window.clearInterval(id);
   }, [enabled, router]);
 

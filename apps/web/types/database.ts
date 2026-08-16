@@ -504,6 +504,7 @@ export type Database = {
           public_token: string;
           ready_at: string | null;
           rejected_at: string | null;
+          rejection_reason: string | null;
           status: Database["public"]["Enums"]["order_status"];
           subtotal: number;
           table_id: string;
@@ -524,6 +525,7 @@ export type Database = {
           public_token?: string;
           ready_at?: string | null;
           rejected_at?: string | null;
+          rejection_reason?: string | null;
           status?: Database["public"]["Enums"]["order_status"];
           subtotal: number;
           table_id: string;
@@ -544,6 +546,7 @@ export type Database = {
           public_token?: string;
           ready_at?: string | null;
           rejected_at?: string | null;
+          rejection_reason?: string | null;
           status?: Database["public"]["Enums"]["order_status"];
           subtotal?: number;
           table_id?: string;
@@ -563,6 +566,54 @@ export type Database = {
             columns: ["table_id"];
             isOneToOne: false;
             referencedRelation: "cafe_tables";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      order_status_history: {
+        Row: {
+          cafe_id: string;
+          changed_by: string | null;
+          created_at: string;
+          id: string;
+          note: string | null;
+          new_status: Database["public"]["Enums"]["order_status"];
+          old_status: Database["public"]["Enums"]["order_status"] | null;
+          order_id: string;
+        };
+        Insert: {
+          cafe_id: string;
+          changed_by?: string | null;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          new_status: Database["public"]["Enums"]["order_status"];
+          old_status?: Database["public"]["Enums"]["order_status"] | null;
+          order_id: string;
+        };
+        Update: {
+          cafe_id?: string;
+          changed_by?: string | null;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          new_status?: Database["public"]["Enums"]["order_status"];
+          old_status?: Database["public"]["Enums"]["order_status"] | null;
+          order_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_status_history_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: false;
+            referencedRelation: "cafes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_status_history_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
             referencedColumns: ["id"];
           },
         ];
@@ -681,6 +732,7 @@ export type Database = {
       transition_order_status: {
         Args: {
           p_next: Database["public"]["Enums"]["order_status"];
+          p_note?: string | null;
           p_order_id: string;
         };
         Returns: Database["public"]["Tables"]["orders"]["Row"];

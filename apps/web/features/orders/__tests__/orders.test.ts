@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 
 import { mapOrderError } from "../errors";
 import { placeOrderSchema, transitionOrderSchema } from "../schemas";
-import { ORDER_TRANSITIONS, nextOrderActions } from "../types";
+import { ORDER_TRANSITIONS, nextOrderActions, orderAgeUrgency } from "../types";
 
 describe("placeOrderSchema", () => {
   it("accepts menu item ids and quantities only (no client prices)", () => {
@@ -43,6 +43,27 @@ describe("order status machine", () => {
       actions.some((action) => action.status === "completed"),
       false,
     );
+  });
+});
+
+describe("order ops helpers", () => {
+  it("labels Accept / Cancel for pending actions", () => {
+    const actions = nextOrderActions("pending");
+    assert.equal(actions[0]?.label, "Accept order");
+    assert.equal(
+      actions.some((action) => action.needsReason),
+      true,
+    );
+  });
+
+  it("classifies waiting urgency without inventing precision", () => {
+    const now = Date.UTC(2026, 7, 16, 12, 0, 0);
+    const fresh = new Date(now - 2 * 60_000).toISOString();
+    const aging = new Date(now - 9 * 60_000).toISOString();
+    const stale = new Date(now - 20 * 60_000).toISOString();
+    assert.equal(orderAgeUrgency(fresh, now), "fresh");
+    assert.equal(orderAgeUrgency(aging, now), "aging");
+    assert.equal(orderAgeUrgency(stale, now), "stale");
   });
 });
 
