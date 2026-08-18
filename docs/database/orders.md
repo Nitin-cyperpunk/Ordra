@@ -22,8 +22,8 @@ Enforced by `public.transition_order_status(order_id, next, note?)`.
 
 - httpOnly cookie `ordra_guest_session` (middleware + place-order)
 - Place: `place_customer_order` RPC (service role from server)
-- Track: `get_customer_order` RPC (token + session) + soft poll refresh
-- Route: `/order/{public_token}`
+- Track: `get_customer_order` RPC (token + session) + poll refresh
+- Routes: `/c/{slug}/order/{public_token}` (confirmation + track), `/order/{public_token}` redirects when slug is known
 
 ## Staff / kitchen
 

@@ -1,10 +1,14 @@
+import Link from "next/link";
+
 import {
   formatOrderNumber,
-  ORDER_STATUS_LABELS,
+  GUEST_TRACK_LABELS,
   type GuestOrderView,
   type OrderStatus,
 } from "@/features/orders/types";
 import { formatMenuPrice } from "@/features/menu/types";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const TRACK_STEPS: OrderStatus[] = [
@@ -30,11 +34,14 @@ function stepState(
 }
 
 export function GuestOrderTracker({ order }: { order: GuestOrderView }) {
+  const menuHref = order.cafe_slug ? `/c/${encodeURIComponent(order.cafe_slug)}` : null;
+  const justPlaced = order.status === "pending";
+
   return (
     <div className="mx-auto w-full max-w-lg space-y-8 px-4 py-8 sm:px-6">
       <header className="space-y-2 border-b pb-6">
         <p className="text-muted-foreground text-xs font-medium uppercase tracking-[0.2em]">
-          Order placed
+          {justPlaced ? "Order placed successfully" : "Track order"}
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">
           {formatOrderNumber(order.order_number)}
@@ -43,12 +50,14 @@ export function GuestOrderTracker({ order }: { order: GuestOrderView }) {
           {order.cafe_name}
           {order.table_code ? ` · Table ${order.table_code}` : ""}
         </p>
-        <p className="text-sm font-medium">{ORDER_STATUS_LABELS[order.status]}</p>
+        <p className="text-sm font-medium" aria-live="polite">
+          {GUEST_TRACK_LABELS[order.status]}
+        </p>
       </header>
 
       {order.status === "rejected" ? (
         <p className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm">
-          This order was rejected by the cafe. You can place a new order from the menu.
+          Order cancelled. You can place a new order from the menu.
         </p>
       ) : (
         <ol className="space-y-3" aria-label="Order progress">
@@ -81,7 +90,7 @@ export function GuestOrderTracker({ order }: { order: GuestOrderView }) {
                     state === "current" && "font-medium",
                   )}
                 >
-                  {ORDER_STATUS_LABELS[step]}
+                  {GUEST_TRACK_LABELS[step]}
                 </span>
               </li>
             );
@@ -113,6 +122,21 @@ export function GuestOrderTracker({ order }: { order: GuestOrderView }) {
           </span>
         </div>
       </section>
+
+      {menuHref ? (
+        <div className="flex flex-col gap-2">
+          <Link
+            href={menuHref}
+            className={cn(buttonVariants({ variant: "outline" }), "min-h-12")}
+          >
+            Back to menu
+          </Link>
+        </div>
+      ) : null}
+
+      <div className="flex justify-center">
+        <ThemeToggle />
+      </div>
     </div>
   );
 }

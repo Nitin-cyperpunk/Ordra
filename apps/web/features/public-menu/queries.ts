@@ -58,6 +58,7 @@ function mapItem(row: Record<string, unknown>): PublicMenuItem {
     image_path: (row.image_path as string | null) ?? null,
     diet: row.diet as MenuItemDiet,
     display_order: Number(row.display_order ?? 0),
+    is_available: row.is_available !== false,
   };
 }
 
@@ -139,7 +140,6 @@ export async function getPublicMenuBySlug(
       .from("menu_items")
       .select(ITEM_PUBLIC_COLUMNS)
       .eq("cafe_id", cafe.id)
-      .eq("is_available", true)
       .order("display_order", { ascending: true })
       .order("name", { ascending: true }),
   ]);

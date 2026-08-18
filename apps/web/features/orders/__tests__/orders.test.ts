@@ -84,10 +84,15 @@ describe("mapOrderError", () => {
     assert.match(mapOrderError("ORDER_TABLE_UNAVAILABLE"), /table/i);
   });
 
+  it("maps unavailable cart items for guests", () => {
+    assert.match(mapOrderError("ORDER_ITEM_UNAVAILABLE"), /no longer available/i);
+    assert.match(mapOrderError("ORDER_BAD_QUANTITY"), /quantity/i);
+  });
+
   it("hides raw database text", () => {
     assert.equal(
       mapOrderError("permission denied for table orders"),
-      "Couldn't place your order. Please try again.",
+      "Unable to place your order. Please try again.",
     );
   });
 });

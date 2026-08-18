@@ -1,22 +1,21 @@
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import { getGuestOrderByToken } from "@/features/orders/actions";
 import { GuestOrderTracker } from "@/features/orders/components/guest-order-tracker";
 import { GuestOrderRefresh } from "@/features/orders/components/guest-order-refresh";
 import { ensureGuestSessionId } from "@/features/orders/guest-session";
 
-type OrderTrackPageProps = {
-  params: Promise<{ publicToken: string }>;
+type CafeOrderTrackPageProps = {
+  params: Promise<{ cafeSlug: string; publicToken: string }>;
 };
 
 export const metadata = {
-  title: "Track order · Ordra",
+  title: "Order · Ordra",
   robots: { index: false, follow: false },
 };
 
-export default async function OrderTrackPage({ params }: OrderTrackPageProps) {
-  const { publicToken } = await params;
+export default async function CafeGuestOrderPage({ params }: CafeOrderTrackPageProps) {
+  const { cafeSlug, publicToken } = await params;
   await ensureGuestSessionId();
   const order = await getGuestOrderByToken(publicToken);
 
@@ -24,10 +23,8 @@ export default async function OrderTrackPage({ params }: OrderTrackPageProps) {
     notFound();
   }
 
-  if (order.cafe_slug) {
-    redirect(
-      `/c/${encodeURIComponent(order.cafe_slug)}/order/${encodeURIComponent(publicToken)}`,
-    );
+  if (order.cafe_slug && order.cafe_slug !== cafeSlug) {
+    notFound();
   }
 
   return (
@@ -36,11 +33,6 @@ export default async function OrderTrackPage({ params }: OrderTrackPageProps) {
         enabled={order.status !== "completed" && order.status !== "rejected"}
       />
       <GuestOrderTracker order={order} />
-      <p className="text-muted-foreground pb-10 text-center text-xs">
-        <Link href="/" className="underline-offset-4 hover:underline">
-          Powered by Ordra
-        </Link>
-      </p>
     </div>
   );
 }

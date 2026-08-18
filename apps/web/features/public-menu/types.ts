@@ -34,6 +34,7 @@ export type PublicMenuItem = {
   image_path: string | null;
   diet: MenuItemDiet;
   display_order: number;
+  is_available: boolean;
 };
 
 export type PublicMenu = {

@@ -77,34 +77,41 @@ export async function placeOrderAction(input: unknown): Promise<PlaceOrderResult
   const sessionId = await ensureGuestSessionId();
   const admin = createAdminClient();
 
-  const { data, error } = await admin.rpc("place_customer_order", {
-    p_cafe_slug: parsed.data.cafeSlug,
-    p_table_token: parsed.data.tableToken,
-    p_customer_session_id: sessionId,
-    p_idempotency_key: parsed.data.idempotencyKey,
-    p_notes: parsed.data.notes ?? null,
-    p_items: parsed.data.items.map((item) => ({
-      menu_item_id: item.menuItemId,
-      quantity: item.quantity,
-    })),
-  });
+  try {
+    const { data, error } = await admin.rpc("place_customer_order", {
+      p_cafe_slug: parsed.data.cafeSlug,
+      p_table_token: parsed.data.tableToken,
+      p_customer_session_id: sessionId,
+      p_idempotency_key: parsed.data.idempotencyKey,
+      p_notes: parsed.data.notes ?? null,
+      p_items: parsed.data.items.map((item) => ({
+        menu_item_id: item.menuItemId,
+        quantity: item.quantity,
+      })),
+    });
 
-  if (error) {
-    return { ok: false, error: mapOrderError(error.message) };
+    if (error) {
+      return { ok: false, error: mapOrderError(error.message) };
+    }
+
+    const payload = data as {
+      public_token: string;
+      order_number: number;
+      replayed?: boolean;
+    };
+
+    return {
+      ok: true,
+      publicToken: payload.public_token,
+      orderNumber: Number(payload.order_number),
+      replayed: Boolean(payload.replayed),
+    };
+  } catch {
+    return {
+      ok: false,
+      error: "Connection problem. Please check your internet connection.",
+    };
   }
-
-  const payload = data as {
-    public_token: string;
-    order_number: number;
-    replayed?: boolean;
-  };
-
-  return {
-    ok: true,
-    publicToken: payload.public_token,
-    orderNumber: Number(payload.order_number),
-    replayed: Boolean(payload.replayed),
-  };
 }
 
 export async function getGuestOrderByToken(
@@ -133,6 +140,7 @@ export async function getGuestOrderByToken(
     notes: (row.notes as string | null) ?? null,
     created_at: String(row.created_at),
     cafe_name: String(row.cafe_name ?? ""),
+    cafe_slug: row.cafe_slug ? String(row.cafe_slug) : null,
     table_code: String(row.table_code ?? ""),
     currency: String(row.currency ?? "INR"),
     items: items.map((item) => {

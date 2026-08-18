@@ -105,6 +105,7 @@ export type GuestOrderView = {
   notes: string | null;
   created_at: string;
   cafe_name: string;
+  cafe_slug: string | null;
   table_code: string;
   currency: string;
   items: Array<{
@@ -114,6 +115,16 @@ export type GuestOrderView = {
     quantity: number;
     line_total: string;
   }>;
+};
+
+/** Customer-facing tracker labels. Status values stay Module 11/12. */
+export const GUEST_TRACK_LABELS: Record<OrderStatus, string> = {
+  pending: "Order placed",
+  confirmed: "Accepted",
+  preparing: "Preparing",
+  ready: "Ready",
+  completed: "Completed",
+  rejected: "Cancelled",
 };
 
 export function formatOrderNumber(orderNumber: number): string {
