@@ -1,6 +1,6 @@
 # Orders (Modules 11–12)
 
-Customer table ordering + cafe kitchen / order operations. No payments or invoices.
+Customer table ordering + cafe kitchen / order operations. Invoices are Module 14 (from completed orders).
 
 ## Model
 
@@ -42,3 +42,5 @@ Client-sent prices are ignored.
 
 - `20260815220000_create_orders_and_order_items.sql` (Module 11)
 - `20260817090000_create_order_status_history.sql` (Module 12)
+
+Invoices from completed orders: see `docs/database/invoices.md`.

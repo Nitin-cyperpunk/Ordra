@@ -6,6 +6,9 @@ import { createBrowserClient } from "@supabase/ssr";
 
 const SOUND_KEY = "ordra-order-sound";
 
+let chimeUrl: string | null = null;
+let chimeEl: HTMLAudioElement | null = null;
+
 function createOrdersRealtimeClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,33 +17,76 @@ function createOrdersRealtimeClient() {
   );
 }
 
-function playChime() {
+function buildChimeWav(): Blob {
+  const sampleRate = 22050;
+  const duration = 0.55;
+  const count = Math.floor(sampleRate * duration);
+  const pcm = new Int16Array(count);
+
+  for (let i = 0; i < count; i += 1) {
+    const t = i / sampleRate;
+    const freq = t < 0.16 ? 880 : 1175;
+    const attack = Math.min(1, t / 0.008);
+    const decay = Math.exp(-t * 4.2);
+    const sample = Math.sin(2 * Math.PI * freq * t) * attack * decay;
+    pcm[i] = Math.round(Math.max(-1, Math.min(1, sample)) * 32767);
+  }
+
+  const bytes = new Uint8Array(44 + pcm.byteLength);
+  const view = new DataView(bytes.buffer);
+  const writeAscii = (offset: number, value: string) => {
+    for (let i = 0; i < value.length; i += 1) {
+      view.setUint8(offset + i, value.charCodeAt(i));
+    }
+  };
+
+  writeAscii(0, "RIFF");
+  view.setUint32(4, 36 + pcm.byteLength, true);
+  writeAscii(8, "WAVE");
+  writeAscii(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeAscii(36, "data");
+  view.setUint32(40, pcm.byteLength, true);
+  bytes.set(new Uint8Array(pcm.buffer, pcm.byteOffset, pcm.byteLength), 44);
+  return new Blob([bytes], { type: "audio/wav" });
+}
+
+function getChimeElement(): HTMLAudioElement {
+  if (!chimeUrl) {
+    chimeUrl = URL.createObjectURL(buildChimeWav());
+  }
+  if (!chimeEl) {
+    chimeEl = new Audio(chimeUrl);
+    chimeEl.preload = "auto";
+  }
+  // Full tab volume. OS / laptop volume still applies — browsers cannot override it.
+  chimeEl.volume = 1;
+  return chimeEl;
+}
+
+async function playChime(): Promise<boolean> {
+  const el = getChimeElement();
   try {
-    const AudioCtx =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext?: typeof AudioContext })
-        .webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.value = 880;
-    gain.gain.value = 0.04;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
-    osc.stop(ctx.currentTime + 0.4);
-    window.setTimeout(() => void ctx.close(), 500);
+    el.pause();
+    el.currentTime = 0;
+    el.volume = 1;
+    await el.play();
+    return true;
   } catch {
-    // Autoplay / AudioContext blocked — ignore.
+    return false;
   }
 }
 
 export type OrdersRealtimeState = {
   connection: "connecting" | "live" | "reconnecting";
   soundEnabled: boolean;
+  soundError: string | null;
   toggleSound: () => void;
 };
 
@@ -52,6 +98,7 @@ export function useOrdersRealtime(
   const [connection, setConnection] =
     useState<OrdersRealtimeState["connection"]>("connecting");
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [soundError, setSoundError] = useState<string | null>(null);
   const knownPending = useRef<Set<string>>(new Set());
   const primed = useRef(false);
 
@@ -65,17 +112,23 @@ export function useOrdersRealtime(
   }, [options?.enableSound]);
 
   const toggleSound = useCallback(() => {
-    setSoundEnabled((prev) => {
-      const next = !prev;
-      try {
-        window.localStorage.setItem(SOUND_KEY, next ? "1" : "0");
-      } catch {
-        // ignore
-      }
-      if (next) playChime();
-      return next;
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    try {
+      window.localStorage.setItem(SOUND_KEY, next ? "1" : "0");
+    } catch {
+      // ignore
+    }
+    if (!next) {
+      setSoundError(null);
+      return;
+    }
+    void playChime().then((ok) => {
+      setSoundError(
+        ok ? null : "Could not play the chime. Unmute this browser tab and try again.",
+      );
     });
-  }, []);
+  }, [soundEnabled]);
 
   useEffect(() => {
     const supabase = createOrdersRealtimeClient();
@@ -100,7 +153,7 @@ export function useOrdersRealtime(
           ) {
             if (!knownPending.current.has(next.id)) {
               knownPending.current.add(next.id);
-              playChime();
+              void playChime();
             }
           }
           if (
@@ -112,7 +165,7 @@ export function useOrdersRealtime(
             !knownPending.current.has(next.id)
           ) {
             knownPending.current.add(next.id);
-            playChime();
+            void playChime();
           }
           router.refresh();
         },
@@ -135,7 +188,7 @@ export function useOrdersRealtime(
     };
   }, [cafeId, options?.enableSound, router, soundEnabled]);
 
-  return { connection, soundEnabled, toggleSound };
+  return { connection, soundEnabled, soundError, toggleSound };
 }
 
 export function OrdersConnectionBanner({

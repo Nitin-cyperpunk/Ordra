@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { GuestCreateInvoiceButton } from "@/features/billing/components/guest-create-invoice-button";
+import { canCreateInvoice } from "@/features/billing/invoice-logic";
 import {
   formatOrderNumber,
   GUEST_TRACK_LABELS,
@@ -33,7 +35,15 @@ function stepState(
   return "upcoming";
 }
 
-export function GuestOrderTracker({ order }: { order: GuestOrderView }) {
+export function GuestOrderTracker({
+  order,
+  invoiceHref,
+  hasInvoice = false,
+}: {
+  order: GuestOrderView;
+  invoiceHref: string;
+  hasInvoice?: boolean;
+}) {
   const menuHref = order.cafe_slug ? `/c/${encodeURIComponent(order.cafe_slug)}` : null;
   const justPlaced = order.status === "pending";
 
@@ -122,6 +132,32 @@ export function GuestOrderTracker({ order }: { order: GuestOrderView }) {
           </span>
         </div>
       </section>
+
+      {canCreateInvoice(order.status) ? (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold">Invoice</h2>
+          {hasInvoice ? (
+            <Link href={invoiceHref} className={cn(buttonVariants(), "min-h-12")}>
+              View Invoice
+            </Link>
+          ) : (
+            <GuestCreateInvoiceButton
+              publicToken={order.public_token}
+              successHref={invoiceHref}
+              cafeName={order.cafe_name}
+              currency={order.currency}
+              total={String(order.total)}
+              items={order.items.map((item) => ({
+                id: item.id,
+                name: item.name,
+                quantity: item.quantity,
+                unit_price: item.price,
+                line_total: String(item.line_total),
+              }))}
+            />
+          )}
+        </section>
+      ) : null}
 
       {menuHref ? (
         <div className="flex flex-col gap-2">

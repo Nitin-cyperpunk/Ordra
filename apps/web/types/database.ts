@@ -669,6 +669,173 @@ export type Database = {
           },
         ];
       };
+      cafe_invoice_counters: {
+        Row: {
+          cafe_id: string;
+          last_number: number;
+        };
+        Insert: {
+          cafe_id: string;
+          last_number?: number;
+        };
+        Update: {
+          cafe_id?: string;
+          last_number?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "cafe_invoice_counters_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: true;
+            referencedRelation: "cafes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      invoices: {
+        Row: {
+          cafe_address_snapshot: string | null;
+          cafe_email_snapshot: string | null;
+          cafe_id: string;
+          cafe_logo_url_snapshot: string | null;
+          cafe_name_snapshot: string;
+          cafe_phone_snapshot: string | null;
+          created_at: string;
+          currency: string;
+          customer_name: string | null;
+          customer_phone: string | null;
+          discount_amount: number;
+          id: string;
+          invoice_number: string;
+          issued_at: string;
+          issued_by: string | null;
+          notes_snapshot: string | null;
+          order_id: string;
+          order_number: number;
+          status: Database["public"]["Enums"]["invoice_status"];
+          subtotal: number;
+          table_code: string | null;
+          tax_amount: number;
+          total_amount: number;
+          updated_at: string;
+        };
+        Insert: {
+          cafe_address_snapshot?: string | null;
+          cafe_email_snapshot?: string | null;
+          cafe_id: string;
+          cafe_logo_url_snapshot?: string | null;
+          cafe_name_snapshot: string;
+          cafe_phone_snapshot?: string | null;
+          created_at?: string;
+          currency?: string;
+          customer_name?: string | null;
+          customer_phone?: string | null;
+          discount_amount?: number;
+          id?: string;
+          invoice_number: string;
+          issued_at?: string;
+          issued_by?: string | null;
+          notes_snapshot?: string | null;
+          order_id: string;
+          order_number: number;
+          status?: Database["public"]["Enums"]["invoice_status"];
+          subtotal: number;
+          table_code?: string | null;
+          tax_amount?: number;
+          total_amount: number;
+          updated_at?: string;
+        };
+        Update: {
+          cafe_address_snapshot?: string | null;
+          cafe_email_snapshot?: string | null;
+          cafe_id?: string;
+          cafe_logo_url_snapshot?: string | null;
+          cafe_name_snapshot?: string;
+          cafe_phone_snapshot?: string | null;
+          created_at?: string;
+          currency?: string;
+          customer_name?: string | null;
+          customer_phone?: string | null;
+          discount_amount?: number;
+          id?: string;
+          invoice_number?: string;
+          issued_at?: string;
+          issued_by?: string | null;
+          notes_snapshot?: string | null;
+          order_id?: string;
+          order_number?: number;
+          status?: Database["public"]["Enums"]["invoice_status"];
+          subtotal?: number;
+          table_code?: string | null;
+          tax_amount?: number;
+          total_amount?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "invoices_cafe_id_fkey";
+            columns: ["cafe_id"];
+            isOneToOne: false;
+            referencedRelation: "cafes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "invoices_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: true;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      invoice_items: {
+        Row: {
+          created_at: string;
+          id: string;
+          invoice_id: string;
+          item_name_snapshot: string;
+          line_total: number;
+          menu_item_id: string | null;
+          quantity: number;
+          unit_price_snapshot: number;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          invoice_id: string;
+          item_name_snapshot: string;
+          line_total: number;
+          menu_item_id?: string | null;
+          quantity: number;
+          unit_price_snapshot: number;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          invoice_id?: string;
+          item_name_snapshot?: string;
+          line_total?: number;
+          menu_item_id?: string | null;
+          quantity?: number;
+          unit_price_snapshot?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey";
+            columns: ["invoice_id"];
+            isOneToOne: false;
+            referencedRelation: "invoices";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "invoice_items_menu_item_id_fkey";
+            columns: ["menu_item_id"];
+            isOneToOne: false;
+            referencedRelation: "menu_items";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       public_cafes: {
@@ -737,6 +904,18 @@ export type Database = {
         };
         Returns: Database["public"]["Tables"]["orders"]["Row"];
       };
+      issue_invoice_for_order: {
+        Args: { p_order_id: string };
+        Returns: Database["public"]["Tables"]["invoices"]["Row"];
+      };
+      issue_guest_invoice: {
+        Args: { p_customer_session_id: string; p_public_token: string };
+        Returns: Json;
+      };
+      get_customer_invoice: {
+        Args: { p_customer_session_id: string; p_public_token: string };
+        Returns: Json;
+      };
       commit_menu_import: {
         Args: {
           p_cafe_id: string;
@@ -755,6 +934,7 @@ export type Database = {
       menu_import_status: "uploaded" | "processing" | "review" | "completed" | "failed";
       order_status:
         "pending" | "confirmed" | "preparing" | "ready" | "completed" | "rejected";
+      invoice_status: "issued";
       waitlist_status: "pending" | "contacted" | "archived";
     };
     CompositeTypes: {
@@ -888,6 +1068,7 @@ export const Constants = {
       cafe_table_status: ["active", "inactive"],
       menu_item_diet: ["vegetarian", "non_vegetarian"],
       menu_import_status: ["uploaded", "processing", "review", "completed", "failed"],
+      invoice_status: ["issued"],
       waitlist_status: ["pending", "contacted", "archived"],
     },
   },

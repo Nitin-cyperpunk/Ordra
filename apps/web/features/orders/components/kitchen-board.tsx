@@ -24,9 +24,12 @@ type KitchenBoardProps = {
 };
 
 export function KitchenBoard({ cafeId, currency, cafeName, orders }: KitchenBoardProps) {
-  const { connection, soundEnabled, toggleSound } = useOrdersRealtime(cafeId, {
-    enableSound: true,
-  });
+  const { connection, soundEnabled, soundError, toggleSound } = useOrdersRealtime(
+    cafeId,
+    {
+      enableSound: true,
+    },
+  );
 
   return (
     <div className="space-y-4">
@@ -42,16 +45,28 @@ export function KitchenBoard({ cafeId, currency, cafeName, orders }: KitchenBoar
             Focus on items and tables. No settings or analytics here.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="min-h-11"
-            onClick={toggleSound}
-            aria-pressed={soundEnabled}
-          >
-            {soundEnabled ? "Sound on" : "Sound off"}
-          </Button>
+        <div className="flex flex-wrap items-start gap-2">
+          <div className="flex flex-col items-end gap-1">
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11"
+              onClick={toggleSound}
+              aria-pressed={soundEnabled}
+              aria-label={
+                soundEnabled
+                  ? "Order chime on. Click to turn off"
+                  : "Order chime off. Click to enable and hear a test ding"
+              }
+            >
+              {soundEnabled ? "Sound on" : "Sound off"}
+            </Button>
+            {soundError ? (
+              <p className="text-destructive max-w-56 text-right text-xs" role="alert">
+                {soundError}
+              </p>
+            ) : null}
+          </div>
           <Button asChild variant="secondary" className="min-h-11">
             <Link href={`/dashboard/cafes/${cafeId}/orders`}>Exit kitchen</Link>
           </Button>

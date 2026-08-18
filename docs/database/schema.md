@@ -80,9 +80,16 @@ See `docs/database/public-menu.md`. Cart / orders deferred; table QR context is 
 ## Implemented: customer orders (Module 11)
 
 Tables: `orders`, `order_items`, `cafe_order_counters`. Guest place/track via RPCs +
-httpOnly session cookie. Staff dashboard + status machine. No payments/invoices.
+httpOnly session cookie. Staff dashboard + status machine. Invoices: Module 14.
 
 See `docs/database/orders.md`. Migration `20260815220000_create_orders_and_order_items.sql`.
+
+## Implemented: cafe invoices (Module 14)
+
+Tables: `invoices`, `invoice_items`, `cafe_invoice_counters`. One invoice per completed order.
+Snapshots for letterhead and line items. Staff + guest RPCs. No payments.
+
+See `docs/database/invoices.md`. Migration `20260819100000_create_invoices.sql`.
 
 ## Migrations
 

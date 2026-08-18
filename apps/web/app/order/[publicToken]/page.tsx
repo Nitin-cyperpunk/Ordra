@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { getGuestInvoice } from "@/features/billing/actions";
 import { getGuestOrderByToken } from "@/features/orders/actions";
 import { GuestOrderTracker } from "@/features/orders/components/guest-order-tracker";
 import { GuestOrderRefresh } from "@/features/orders/components/guest-order-refresh";
@@ -18,7 +19,10 @@ export const metadata = {
 export default async function OrderTrackPage({ params }: OrderTrackPageProps) {
   const { publicToken } = await params;
   await ensureGuestSessionId();
-  const order = await getGuestOrderByToken(publicToken);
+  const [order, invoice] = await Promise.all([
+    getGuestOrderByToken(publicToken),
+    getGuestInvoice(publicToken),
+  ]);
 
   if (!order) {
     notFound();
@@ -35,7 +39,11 @@ export default async function OrderTrackPage({ params }: OrderTrackPageProps) {
       <GuestOrderRefresh
         enabled={order.status !== "completed" && order.status !== "rejected"}
       />
-      <GuestOrderTracker order={order} />
+      <GuestOrderTracker
+        order={order}
+        hasInvoice={Boolean(invoice)}
+        invoiceHref={`/order/${encodeURIComponent(publicToken)}/invoice`}
+      />
       <p className="text-muted-foreground pb-10 text-center text-xs">
         <Link href="/" className="underline-offset-4 hover:underline">
           Powered by Ordra

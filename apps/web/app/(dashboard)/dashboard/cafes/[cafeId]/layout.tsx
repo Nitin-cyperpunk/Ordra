@@ -14,7 +14,7 @@ export default async function CafeLayout({ children, params }: CafeLayoutProps) 
   const { cafe } = await requireCafeAccess(cafeId);
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6">
+    <div className="mx-auto w-full max-w-5xl space-y-6 print:max-w-none">
       <SyncActiveCafe cafeId={cafeId} />
       <div className="space-y-3 border-b pb-4 print:hidden">
         <div>

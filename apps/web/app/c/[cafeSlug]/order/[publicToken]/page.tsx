@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { getGuestInvoice } from "@/features/billing/actions";
 import { getGuestOrderByToken } from "@/features/orders/actions";
 import { GuestOrderTracker } from "@/features/orders/components/guest-order-tracker";
 import { GuestOrderRefresh } from "@/features/orders/components/guest-order-refresh";
@@ -17,7 +18,10 @@ export const metadata = {
 export default async function CafeGuestOrderPage({ params }: CafeOrderTrackPageProps) {
   const { cafeSlug, publicToken } = await params;
   await ensureGuestSessionId();
-  const order = await getGuestOrderByToken(publicToken);
+  const [order, invoice] = await Promise.all([
+    getGuestOrderByToken(publicToken),
+    getGuestInvoice(publicToken),
+  ]);
 
   if (!order) {
     notFound();
@@ -32,7 +36,11 @@ export default async function CafeGuestOrderPage({ params }: CafeOrderTrackPageP
       <GuestOrderRefresh
         enabled={order.status !== "completed" && order.status !== "rejected"}
       />
-      <GuestOrderTracker order={order} />
+      <GuestOrderTracker
+        order={order}
+        hasInvoice={Boolean(invoice)}
+        invoiceHref={`/c/${encodeURIComponent(cafeSlug)}/order/${encodeURIComponent(publicToken)}/invoice`}
+      />
     </div>
   );
 }

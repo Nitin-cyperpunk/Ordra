@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { getInvoiceForOrder } from "@/features/billing/actions";
+import { StaffCreateInvoiceButton } from "@/features/billing/components/staff-create-invoice-button";
+import { canCreateInvoice } from "@/features/billing/invoice-logic";
+import { buttonVariants } from "@/components/ui/button";
 import { getCafeById } from "@/features/cafes/actions";
 import { requireCafeAccess } from "@/features/memberships/access";
 import {
@@ -16,6 +20,7 @@ import {
   ORDER_OPS_LABELS,
 } from "@/features/orders/types";
 import { formatMenuPrice } from "@/features/menu/types";
+import { cn } from "@/lib/utils";
 
 type OrderDetailPageProps = {
   params: Promise<{ cafeId: string; orderId: string }>;
@@ -35,10 +40,11 @@ export async function generateMetadata({ params }: OrderDetailPageProps) {
 export default async function CafeOrderDetailPage({ params }: OrderDetailPageProps) {
   const { cafeId, orderId } = await params;
   await requireCafeAccess(cafeId);
-  const [cafe, detail, history] = await Promise.all([
+  const [cafe, detail, history, invoice] = await Promise.all([
     getCafeById(cafeId),
     getCafeOrderDetail(cafeId, orderId),
     getOrderStatusHistory(cafeId, orderId),
+    getInvoiceForOrder(cafeId, orderId),
   ]);
 
   if (!detail) notFound();
@@ -105,6 +111,35 @@ export default async function CafeOrderDetailPage({ params }: OrderDetailPagePro
         actions={actions}
         action={transitionOrderAction}
       />
+
+      {canCreateInvoice(order.status) ? (
+        <section className="space-y-3 rounded-xl border p-4">
+          <h3 className="text-sm font-semibold">Invoice</h3>
+          {invoice ? (
+            <Link
+              href={`/dashboard/cafes/${cafeId}/billing/${invoice.id}`}
+              className={cn(buttonVariants(), "min-h-11")}
+            >
+              View Invoice
+            </Link>
+          ) : (
+            <StaffCreateInvoiceButton
+              cafeId={cafeId}
+              orderId={order.id}
+              cafeName={cafe?.name ?? "Cafe"}
+              currency={currency}
+              total={order.total}
+              items={items.map((item) => ({
+                id: item.id,
+                name: item.item_name_snapshot,
+                quantity: item.quantity,
+                unit_price: item.item_price_snapshot,
+                line_total: item.line_total,
+              }))}
+            />
+          )}
+        </section>
+      ) : null}
 
       <section className="space-y-3">
         <h3 className="text-sm font-semibold uppercase tracking-wide">Timeline</h3>

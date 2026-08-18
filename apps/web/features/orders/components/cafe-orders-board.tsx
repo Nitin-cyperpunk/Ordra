@@ -25,9 +25,12 @@ type CafeOrdersBoardProps = {
 };
 
 export function CafeOrdersBoard({ cafeId, currency, orders }: CafeOrdersBoardProps) {
-  const { connection, soundEnabled, toggleSound } = useOrdersRealtime(cafeId, {
-    enableSound: true,
-  });
+  const { connection, soundEnabled, soundError, toggleSound } = useOrdersRealtime(
+    cafeId,
+    {
+      enableSound: true,
+    },
+  );
 
   const active = orders.filter((order) => ACTIVE_ORDER_STATUSES.includes(order.status));
 
@@ -42,15 +45,27 @@ export function CafeOrdersBoard({ cafeId, currency, orders }: CafeOrdersBoardPro
             <Link href={`/dashboard/cafes/${cafeId}/orders/history`}>History</Link>
           </Button>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          className="min-h-11"
-          onClick={toggleSound}
-          aria-pressed={soundEnabled}
-        >
-          {soundEnabled ? "Sound on" : "Sound off"}
-        </Button>
+        <div className="flex flex-col items-end gap-1">
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-11"
+            onClick={toggleSound}
+            aria-pressed={soundEnabled}
+            aria-label={
+              soundEnabled
+                ? "Order chime on. Click to turn off"
+                : "Order chime off. Click to enable and hear a test ding"
+            }
+          >
+            {soundEnabled ? "Sound on" : "Sound off"}
+          </Button>
+          {soundError ? (
+            <p className="text-destructive max-w-56 text-right text-xs" role="alert">
+              {soundError}
+            </p>
+          ) : null}
+        </div>
       </div>
 
       <OrdersConnectionBanner connection={connection} />
