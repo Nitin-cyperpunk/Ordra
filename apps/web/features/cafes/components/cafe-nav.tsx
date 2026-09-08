@@ -16,7 +16,7 @@ const NAV = [
   { segment: "kitchen", label: "Kitchen", match: "prefix" as const },
   { segment: "menu", label: "Menu", match: "prefix" as const },
   { segment: "tables", label: "Tables", match: "prefix" as const },
-  { segment: "insights", label: "Insights", match: "prefix" as const, soon: true },
+  { segment: "insights", label: "Insights", match: "prefix" as const },
   { segment: "settings", label: "Settings", match: "prefix" as const },
 ] as const;
 

@@ -1,9 +1,11 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { getCafeById } from "@/features/cafes/actions";
 import { SetupChecklist } from "@/features/cafes/components/setup-checklist";
+import { getCafeTodaySnapshot } from "@/features/insights/actions";
 import { listMenuItems } from "@/features/menu/actions";
-import { canManageMenu } from "@/features/menu/types";
+import { canManageMenu, formatMenuPrice } from "@/features/menu/types";
 import { requireCafeAccess } from "@/features/memberships/access";
 import { getCafeMemberships } from "@/features/memberships/actions";
 import { listCafeTables } from "@/features/tables/actions";
@@ -35,10 +37,11 @@ export default async function CafeDashboardPage({ params }: CafeDashboardPagePro
   const { role } = await requireCafeAccess(cafeId);
   const cafe = (await getCafeById(cafeId))!;
 
-  const [tables, items, members] = await Promise.all([
+  const [tables, items, members, today] = await Promise.all([
     listCafeTables(cafeId),
     listMenuItems(cafeId),
     getCafeMemberships(cafeId),
+    getCafeTodaySnapshot(cafeId),
   ]);
 
   const activeTables = tables.filter((table) => table.status === "active").length;
@@ -81,16 +84,34 @@ export default async function CafeDashboardPage({ params }: CafeDashboardPagePro
           How is {cafe.name} doing today?
         </h2>
         <p className="text-muted-foreground text-sm">
-          A simple snapshot of your cafe. Orders and sales insights arrive in a later
-          update.
+          A simple snapshot of your cafe. Open Insights for deeper performance.
         </p>
       </div>
 
       <SetupChecklist cafeId={cafeId} items={checklist} />
 
       <section className="grid gap-3 sm:grid-cols-3">
-        <OverviewCard label="Sales today" value="—" hint="Coming with Orders" />
-        <OverviewCard label="Orders today" value="—" hint="Coming soon" />
+        <OverviewCard
+          label="Sales today"
+          value={today ? formatMenuPrice(today.revenue, today.currency) : "—"}
+          hint={
+            today && today.orders === 0
+              ? "No completed sales yet today"
+              : "Completed orders only"
+          }
+        />
+        <OverviewCard
+          label="Orders today"
+          value={today ? String(today.orders) : "—"}
+          hint={
+            <Link
+              href={`/dashboard/cafes/${cafeId}/insights`}
+              className="hover:text-foreground underline-offset-4 hover:underline"
+            >
+              View insights
+            </Link>
+          }
+        />
         <OverviewCard
           label="Active tables"
           value={String(activeTables)}
@@ -169,7 +190,7 @@ function OverviewCard({
 }: {
   label: string;
   value: string;
-  hint: string;
+  hint: ReactNode;
 }) {
   return (
     <div className="rounded-xl border p-4">

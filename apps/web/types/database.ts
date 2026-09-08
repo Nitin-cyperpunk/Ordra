@@ -916,6 +916,16 @@ export type Database = {
         Args: { p_customer_session_id: string; p_public_token: string };
         Returns: Json;
       };
+      get_cafe_insights: {
+        Args: {
+          p_cafe_id: string;
+          p_from: string;
+          p_to: string;
+          p_prev_from: string;
+          p_prev_to: string;
+        };
+        Returns: Json;
+      };
       commit_menu_import: {
         Args: {
           p_cafe_id: string;

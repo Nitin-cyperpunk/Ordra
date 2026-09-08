@@ -91,6 +91,14 @@ Snapshots for letterhead and line items. Staff + guest RPCs. No payments.
 
 See `docs/database/invoices.md`. Migration `20260819100000_create_invoices.sql`.
 
+## Implemented: cafe insights (Module 15)
+
+RPC `get_cafe_insights` aggregates completed-order revenue, top items, categories,
+peak hours, guest sessions, and tables. Partial indexes on `completed_at` / `rejected_at`.
+No AI — rule-based highlights only.
+
+See `docs/database/insights.md`. Migration `20260908090000_create_cafe_insights.sql`.
+
 ## Migrations
 
 SQL migrations live in `supabase/migrations/` and are applied via Supabase CLI.
