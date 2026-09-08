@@ -1,10 +1,16 @@
+import Link from "next/link";
+
+import { GuestCreateInvoiceButton } from "@/features/billing/components/guest-create-invoice-button";
+import { canCreateInvoice } from "@/features/billing/invoice-logic";
 import {
   formatOrderNumber,
-  ORDER_STATUS_LABELS,
+  GUEST_TRACK_LABELS,
   type GuestOrderView,
   type OrderStatus,
 } from "@/features/orders/types";
 import { formatMenuPrice } from "@/features/menu/types";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const TRACK_STEPS: OrderStatus[] = [
@@ -29,12 +35,23 @@ function stepState(
   return "upcoming";
 }
 
-export function GuestOrderTracker({ order }: { order: GuestOrderView }) {
+export function GuestOrderTracker({
+  order,
+  invoiceHref,
+  hasInvoice = false,
+}: {
+  order: GuestOrderView;
+  invoiceHref: string;
+  hasInvoice?: boolean;
+}) {
+  const menuHref = order.cafe_slug ? `/c/${encodeURIComponent(order.cafe_slug)}` : null;
+  const justPlaced = order.status === "pending";
+
   return (
     <div className="mx-auto w-full max-w-lg space-y-8 px-4 py-8 sm:px-6">
       <header className="space-y-2 border-b pb-6">
         <p className="text-muted-foreground text-xs font-medium uppercase tracking-[0.2em]">
-          Order placed
+          {justPlaced ? "Order placed successfully" : "Track order"}
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">
           {formatOrderNumber(order.order_number)}
@@ -43,12 +60,14 @@ export function GuestOrderTracker({ order }: { order: GuestOrderView }) {
           {order.cafe_name}
           {order.table_code ? ` · Table ${order.table_code}` : ""}
         </p>
-        <p className="text-sm font-medium">{ORDER_STATUS_LABELS[order.status]}</p>
+        <p className="text-sm font-medium" aria-live="polite">
+          {GUEST_TRACK_LABELS[order.status]}
+        </p>
       </header>
 
       {order.status === "rejected" ? (
         <p className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm">
-          This order was rejected by the cafe. You can place a new order from the menu.
+          Order cancelled. You can place a new order from the menu.
         </p>
       ) : (
         <ol className="space-y-3" aria-label="Order progress">
@@ -81,7 +100,7 @@ export function GuestOrderTracker({ order }: { order: GuestOrderView }) {
                     state === "current" && "font-medium",
                   )}
                 >
-                  {ORDER_STATUS_LABELS[step]}
+                  {GUEST_TRACK_LABELS[step]}
                 </span>
               </li>
             );
@@ -113,6 +132,47 @@ export function GuestOrderTracker({ order }: { order: GuestOrderView }) {
           </span>
         </div>
       </section>
+
+      {canCreateInvoice(order.status) ? (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold">Invoice</h2>
+          {hasInvoice ? (
+            <Link href={invoiceHref} className={cn(buttonVariants(), "min-h-12")}>
+              View Invoice
+            </Link>
+          ) : (
+            <GuestCreateInvoiceButton
+              publicToken={order.public_token}
+              successHref={invoiceHref}
+              cafeName={order.cafe_name}
+              currency={order.currency}
+              total={String(order.total)}
+              items={order.items.map((item) => ({
+                id: item.id,
+                name: item.name,
+                quantity: item.quantity,
+                unit_price: item.price,
+                line_total: String(item.line_total),
+              }))}
+            />
+          )}
+        </section>
+      ) : null}
+
+      {menuHref ? (
+        <div className="flex flex-col gap-2">
+          <Link
+            href={menuHref}
+            className={cn(buttonVariants({ variant: "outline" }), "min-h-12")}
+          >
+            Back to menu
+          </Link>
+        </div>
+      ) : null}
+
+      <div className="flex justify-center">
+        <ThemeToggle />
+      </div>
     </div>
   );
 }

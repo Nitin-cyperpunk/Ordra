@@ -1,16 +1,26 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { getInvoiceForOrder } from "@/features/billing/actions";
+import { StaffCreateInvoiceButton } from "@/features/billing/components/staff-create-invoice-button";
+import { canCreateInvoice } from "@/features/billing/invoice-logic";
+import { buttonVariants } from "@/components/ui/button";
 import { getCafeById } from "@/features/cafes/actions";
 import { requireCafeAccess } from "@/features/memberships/access";
-import { getCafeOrderDetail, transitionOrderAction } from "@/features/orders/actions";
+import {
+  getCafeOrderDetail,
+  getOrderStatusHistory,
+  transitionOrderAction,
+} from "@/features/orders/actions";
+import { OrderDetailActions } from "@/features/orders/components/order-detail-actions";
+import { OrderStatusTimeline } from "@/features/orders/components/order-status-timeline";
 import {
   formatOrderNumber,
   nextOrderActions,
-  ORDER_STATUS_LABELS,
+  ORDER_OPS_LABELS,
 } from "@/features/orders/types";
 import { formatMenuPrice } from "@/features/menu/types";
-import { OrderDetailActions } from "@/features/orders/components/order-detail-actions";
+import { cn } from "@/lib/utils";
 
 type OrderDetailPageProps = {
   params: Promise<{ cafeId: string; orderId: string }>;
@@ -30,9 +40,11 @@ export async function generateMetadata({ params }: OrderDetailPageProps) {
 export default async function CafeOrderDetailPage({ params }: OrderDetailPageProps) {
   const { cafeId, orderId } = await params;
   await requireCafeAccess(cafeId);
-  const [cafe, detail] = await Promise.all([
+  const [cafe, detail, history, invoice] = await Promise.all([
     getCafeById(cafeId),
     getCafeOrderDetail(cafeId, orderId),
+    getOrderStatusHistory(cafeId, orderId),
+    getInvoiceForOrder(cafeId, orderId),
   ]);
 
   if (!detail) notFound();
@@ -56,10 +68,10 @@ export default async function CafeOrderDetailPage({ params }: OrderDetailPagePro
           {formatOrderNumber(order.order_number)}
         </h2>
         <p className="text-muted-foreground text-sm">
-          Table {order.table_code ?? "—"} · {ORDER_STATUS_LABELS[order.status]}
+          Table {order.table_code ?? "—"} · {ORDER_OPS_LABELS[order.status]}
         </p>
         <p className="text-muted-foreground text-xs">
-          {new Date(order.created_at).toLocaleString()}
+          Placed {new Date(order.created_at).toLocaleString()}
         </p>
       </div>
 
@@ -67,7 +79,7 @@ export default async function CafeOrderDetailPage({ params }: OrderDetailPagePro
         {items.map((item) => (
           <li key={item.id} className="flex justify-between gap-3 text-sm">
             <span>
-              {item.item_name_snapshot} × {item.quantity}
+              {item.quantity} × {item.item_name_snapshot}
             </span>
             <span className="tabular-nums">
               {formatMenuPrice(item.line_total, currency)}
@@ -77,8 +89,14 @@ export default async function CafeOrderDetailPage({ params }: OrderDetailPagePro
       </ul>
 
       {order.notes ? (
-        <p className="text-sm">
+        <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-sm">
           <span className="font-medium">Note:</span> {order.notes}
+        </p>
+      ) : null}
+
+      {order.rejection_reason ? (
+        <p className="text-sm">
+          <span className="font-medium">Cancel reason:</span> {order.rejection_reason}
         </p>
       ) : null}
 
@@ -93,6 +111,40 @@ export default async function CafeOrderDetailPage({ params }: OrderDetailPagePro
         actions={actions}
         action={transitionOrderAction}
       />
+
+      {canCreateInvoice(order.status) ? (
+        <section className="space-y-3 rounded-xl border p-4">
+          <h3 className="text-sm font-semibold">Invoice</h3>
+          {invoice ? (
+            <Link
+              href={`/dashboard/cafes/${cafeId}/billing/${invoice.id}`}
+              className={cn(buttonVariants(), "min-h-11")}
+            >
+              View Invoice
+            </Link>
+          ) : (
+            <StaffCreateInvoiceButton
+              cafeId={cafeId}
+              orderId={order.id}
+              cafeName={cafe?.name ?? "Cafe"}
+              currency={currency}
+              total={order.total}
+              items={items.map((item) => ({
+                id: item.id,
+                name: item.item_name_snapshot,
+                quantity: item.quantity,
+                unit_price: item.item_price_snapshot,
+                line_total: item.line_total,
+              }))}
+            />
+          )}
+        </section>
+      ) : null}
+
+      <section className="space-y-3">
+        <h3 className="text-sm font-semibold uppercase tracking-wide">Timeline</h3>
+        <OrderStatusTimeline entries={history} />
+      </section>
     </main>
   );
 }

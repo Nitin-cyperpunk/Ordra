@@ -1,7 +1,11 @@
+import Link from "next/link";
+
 import { getCafeById } from "@/features/cafes/actions";
 import { requireCafeAccess } from "@/features/memberships/access";
-import { listCafeOrders } from "@/features/orders/actions";
+import { listActiveCafeOrders } from "@/features/orders/actions";
 import { CafeOrdersBoard } from "@/features/orders/components/cafe-orders-board";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type OrdersPageProps = {
   params: Promise<{ cafeId: string }>;
@@ -19,15 +23,27 @@ export async function generateMetadata({ params }: OrdersPageProps) {
 export default async function CafeOrdersPage({ params }: OrdersPageProps) {
   const { cafeId } = await params;
   await requireCafeAccess(cafeId);
-  const [cafe, orders] = await Promise.all([getCafeById(cafeId), listCafeOrders(cafeId)]);
+  const [cafe, orders] = await Promise.all([
+    getCafeById(cafeId),
+    listActiveCafeOrders(cafeId),
+  ]);
 
   return (
     <main className="space-y-6">
-      <div className="space-y-1">
-        <h2 className="text-2xl font-semibold tracking-tight">Orders</h2>
-        <p className="text-muted-foreground text-sm">
-          Incoming table orders. Confirm, prepare, and mark ready as you go.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-semibold tracking-tight">Orders</h2>
+          <p className="text-muted-foreground text-sm">
+            See what’s new, what’s cooking, and what’s ready — without digging into each
+            ticket.
+          </p>
+        </div>
+        <Link
+          href={`/dashboard/cafes/${cafeId}/kitchen`}
+          className={cn(buttonVariants({ variant: "secondary" }), "min-h-11")}
+        >
+          Open kitchen mode
+        </Link>
       </div>
 
       <CafeOrdersBoard

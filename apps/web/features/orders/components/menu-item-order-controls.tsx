@@ -27,12 +27,20 @@ export function MenuItemOrderControls({
     return <p className="text-muted-foreground text-xs">Scan a table QR to order</p>;
   }
 
+  if (item.is_available === false) {
+    return (
+      <p className="text-muted-foreground text-xs font-medium" aria-live="polite">
+        Unavailable
+      </p>
+    );
+  }
+
   if (quantity === 0) {
     return (
       <Button
         type="button"
         size="sm"
-        className="min-h-10 min-w-10"
+        className="min-h-11 min-w-11"
         aria-label={`Add ${item.name} to cart`}
         onClick={() =>
           addItem({
@@ -58,7 +66,7 @@ export function MenuItemOrderControls({
         type="button"
         size="icon"
         variant="ghost"
-        className="size-9"
+        className="size-11"
         aria-label={`Decrease ${item.name}`}
         onClick={() => setQuantity(item.id, quantity - 1)}
       >
@@ -71,7 +79,7 @@ export function MenuItemOrderControls({
         type="button"
         size="icon"
         variant="ghost"
-        className="size-9"
+        className="size-11"
         aria-label={`Increase ${item.name}`}
         disabled={quantity >= 99}
         onClick={() => setQuantity(item.id, quantity + 1)}

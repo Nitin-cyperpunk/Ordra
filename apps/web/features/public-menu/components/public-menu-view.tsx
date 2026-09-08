@@ -156,9 +156,10 @@ function PublicMenuItemCard({
   orderingEnabled: boolean;
 }) {
   const imageUrl = itemImageUrl(item.image_path);
+  const unavailable = item.is_available === false;
 
   return (
-    <li className="flex gap-3 rounded-xl border p-3">
+    <li className={cn("flex gap-3 rounded-xl border p-3", unavailable && "opacity-70")}>
       <div
         className={cn(
           "bg-muted relative h-20 w-20 shrink-0 overflow-hidden rounded-lg",
@@ -167,7 +168,7 @@ function PublicMenuItemCard({
       >
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+          <img src={imageUrl} alt={item.name} className="h-full w-full object-cover" />
         ) : (
           <span className="text-muted-foreground text-[10px]">No photo</span>
         )}
@@ -186,7 +187,9 @@ function PublicMenuItemCard({
           </p>
         ) : null}
         <div className="flex items-center justify-between gap-2">
-          <p className="text-muted-foreground text-xs">{dietLabel(item.diet)}</p>
+          <p className="text-muted-foreground text-xs">
+            {unavailable ? "Unavailable" : dietLabel(item.diet)}
+          </p>
           <MenuItemOrderControls
             item={item}
             currency={currency}
